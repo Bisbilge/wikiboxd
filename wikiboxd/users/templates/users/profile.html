@@ -1,0 +1,52 @@
+
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }} - Profil{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card card-custom p-4 text-center">
+                <div class="display-1 mb-3">
+                    <i class="bi bi-person-circle" style="color: #455568;"></i>
+                </div>
+                <h3 class="text-white mb-0">{{ user.username }}</h3>
+                <p style="color: #9ab;">{{ user.first_name }} {{ user.last_name }}</p>
+                <p class="small text-muted mb-4">Katılım: {{ user.date_joined|date:"M Y" }}</p>
+                
+                <a href="{% url 'users:edit_profile' %}" class="btn btn-outline-secondary btn-sm mb-2 text-white">Profili Düzenle</a>
+                
+                <form action="{% url 'users:logout' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Çıkış Yap</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <h4 class="text-white mb-3 border-bottom pb-2" style="border-color: #2C3440 !important;">Son Puanlamalarım</h4>
+            
+            {% if user_ratings %}
+                <div class="list-group">
+                    {% for rating in user_ratings %}
+                    <a href="#" class="list-group-item list-group-item-action mb-2 card-custom border-0 p-3">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1 text-white">{{ rating.article.title }}</h6>
+                            <small style="color: #00E054;">
+                                <i class="bi bi-star-fill"></i> {{ rating.score }}/10
+                            </small>
+                        </div>
+                        {% if rating.review_text %}
+                            <p class="mb-1 small" style="color: #9ab;">"{{ rating.review_text|truncatechars:100 }}"</p>
+                        {% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: #9ab;">Henüz hiçbir makaleyi puanlamadın.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,6 +3,7 @@
 {% block title %}Wikiboxd - Wiki Makalelerini Puanla{% endblock %}
 
 {% block content %}
+{% if not user.is_authenticated %}
 <div class="container mt-5">
     <div class="row justify-content-center text-center">
         <div class="col-lg-8">
@@ -10,10 +11,11 @@
             <p class="lead mb-4" style="color: #9ab;">
                 İnternetin en büyük bilgi kaynaklarındaki makaleler için sosyal ağın. Hangi Wikipedia makaleleri gerçekten ufuk açıcı? Oku, puanla ve diğer okuyuculara rehberlik et.
             </p>
-            <button class="btn btn-brand btn-lg px-4 py-2 text-uppercase fs-6">Hesap Oluştur — Ücretsiz</button>
+            <a href="{% url 'users:register' %}" class="btn btn-brand btn-lg px-4 py-2 text-uppercase fs-6">Hesap Oluştur — Ücretsiz</a>
         </div>
     </div>
 </div>
+{% endif %}
 
 <div class="container mt-5 pt-4">
     <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style="border-color: #2C3440 !important;">
@@ -24,17 +26,21 @@
         
         {% for article in articles %}
         <div class="col">
-            <div class="card h-100 card-custom p-3 d-flex flex-column">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <span class="badge" style="background-color: #40bcf4; color: #14181C;">Wiki</span>
-                    <div style="color: #00E054; font-size: 0.85rem;">
-                        <i class="bi bi-star"></i> Puanla
+            <a href="{% url 'articles:detail' article.id %}" class="text-decoration-none">
+                <div class="card h-100 card-custom p-3 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge" style="background-color: #40bcf4; color: #14181C;">Wiki</span>
+                        <div style="color: #00E054; font-size: 0.85rem;">
+                            <i class="bi bi-star"></i> Puanla
+                        </div>
                     </div>
+                    <h5 class="card-title mt-2">{{ article.title }}</h5>
+                    <p class="card-text mt-auto pt-3 mb-1" style="font-size: 0.85rem; color: #9ab;">
+                        {{ article.content|truncatechars:80 }}
+                    </p>
+                    <div class="text-muted mt-2" style="font-size: 0.75rem;">Eklenme: {{ article.created_at|date:"d M Y" }}</div>
                 </div>
-                <h5 class="card-title mt-2">{{ article.title }}</h5>
-                <p class="card-text mt-auto pt-3 mb-1" style="font-size: 0.85rem; color: #9ab;">{{ article.content|truncatechars:80 }}</p>
-                <div class="text-muted mt-2" style="font-size: 0.75rem;">Eklenme: {{ article.created_at|date:"d M Y" }}</div>
-            </div>
+            </a>
         </div>
         
         {% empty %}

@@ -37,7 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
+    
+    # Kendi App'lerimiz
+    'users',
+    'articles',
+    'ratings',
+    'comments',
 ]
 
 MIDDLEWARE = [
@@ -116,3 +121,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Kullanıcı giriş yaptıktan sonra veya çıkış yaptıktan sonra anasayfaya gitsin
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Şifremi unuttum e-postalarını şimdilik gerçek bir e-posta sunucusu yerine terminale (console) basar. 
+# Projeyi canlıya alırken buraya SMTP (Gmail vb.) ayarlarını gireceğiz.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
