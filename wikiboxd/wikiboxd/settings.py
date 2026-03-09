@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    # Kendi App'lerimiz
     'users',
     'articles',
     'ratings',
@@ -122,10 +121,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Kullanıcı giriş yaptıktan sonra veya çıkış yaptıktan sonra anasayfaya gitsin
+
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Şifremi unuttum e-postalarını şimdilik gerçek bir e-posta sunucusu yerine terminale (console) basar. 
-# Projeyi canlıya alırken buraya SMTP (Gmail vb.) ayarlarını gireceğiz.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

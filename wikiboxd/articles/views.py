@@ -8,5 +8,4 @@ def home(request):
     context = {
         'articles': articles_list
     }
-    # Eski projendeki index.html'i kullanacağız
     return render(request, 'index.html', context)
