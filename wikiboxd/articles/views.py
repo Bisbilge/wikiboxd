@@ -22,6 +22,7 @@ def wiki_search(request):
                     'format': 'json',
                     'srlimit': 10,
                 },
+                headers={'User-Agent': 'Wikiboxd/1.0 (galatasaray-uni-project)'},
                 timeout=5
             )
             data = response.json()
@@ -44,6 +45,7 @@ def wiki_import(request, wiki_title):
     try:
         response = requests.get(
             f'https://tr.wikipedia.org/api/rest_v1/page/summary/{wiki_title}',
+            headers={'User-Agent': 'Wikiboxd/1.0 (galatasaray-uni-project)'},
             timeout=5
         )
         if response.status_code != 200:
