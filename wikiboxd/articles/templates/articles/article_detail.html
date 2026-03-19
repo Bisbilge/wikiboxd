@@ -39,6 +39,13 @@
 
         <hr style="border-color: #eaecf0; margin: 1.5rem 0;">
 
+        <!-- Kısa Açıklama -->
+        {% if article.description %}
+        <div class="mb-4 p-3" style="background-color: #eaf3fb; border-left: 4px solid #3366cc; border-radius: 0 4px 4px 0;">
+            <p class="mb-0" style="color: #202122; font-size: 0.97rem; line-height: 1.8;">{{ article.description }}</p>
+        </div>
+        {% endif %}
+
         <!-- Wikipedia Gömülü Görünüm -->
         {% if article.wiki_url %}
         <iframe

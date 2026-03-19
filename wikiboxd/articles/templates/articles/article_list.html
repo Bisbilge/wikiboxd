@@ -22,7 +22,7 @@
                     {{ article.title }}
                 </a>
                 <p class="text-muted mb-1 mt-1" style="font-size: 0.87rem; line-height: 1.5;">
-                    {{ article.content|striptags|truncatechars:160 }}
+                    {{ article.description|default:article.content|striptags|truncatechars:160 }}
                 </p>
                 <small class="text-muted">
                     <i class="bi bi-person me-1"></i>{{ article.author.username|default:"Anonim" }}

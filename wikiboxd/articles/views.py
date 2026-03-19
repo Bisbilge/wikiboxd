@@ -62,11 +62,14 @@ def wiki_import(request, wiki_title):
             timeout=10
         )
 
-        title = summary_resp.json()['title']
-        content = html_resp.text if html_resp.status_code == 200 else summary_resp.json().get('extract', '')
+        summary_data = summary_resp.json()
+        title = summary_data['title']
+        description = summary_data.get('extract', '')
+        content = html_resp.text if html_resp.status_code == 200 else description
 
         article = Article.objects.create(
             title=title,
+            description=description,
             content=content,
             wiki_url=wiki_url,
             author=request.user,
