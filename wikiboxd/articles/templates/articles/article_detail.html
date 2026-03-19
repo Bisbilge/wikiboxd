@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ article.title }} — Wikiboxd{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Makale Başlık Kartı -->
+    <div class="card-custom p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                {% if article.category %}
+                    <span class="badge mb-2" style="background-color: #40bcf4; color: #14181C;">{{ article.category.name }}</span>
+                {% endif %}
+                <h1 class="text-white fw-bold mb-1">{{ article.title }}</h1>
+                <small style="color: #9ab;">
+                    Yazar: {{ article.author.username|default:"Anonim" }} &nbsp;·&nbsp;
+                    {{ article.created_at|date:"d M Y" }}
+                </small>
+            </div>
+            <div class="text-center">
+                {% if avg_score %}
+                    <div style="font-size: 2.5rem; font-weight: 800; color: #00E054; line-height: 1;">
+                        {{ avg_score|floatformat:1 }}
+                    </div>
+                    <small style="color: #9ab;">/ 10 &nbsp;({{ ratings.count }} puan)</small>
+                {% else %}
+                    <div style="color: #9ab; font-size: 0.9rem;">Henüz puanlanmadı</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr style="border-color: #2c3440; margin: 1.5rem 0;">
+        <p class="mb-0" style="line-height: 1.8; color: #deeeff;">{{ article.content }}</p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Puan Ver Formu -->
+        <div class="col-lg-4">
+            <div class="card-custom p-4">
+                <h5 class="text-uppercase mb-3" style="color: #9ab; letter-spacing: 1px; font-size: 0.85rem;">
+                    <i class="bi bi-star me-1"></i> Puanla
+                </h5>
+
+                {% if user.is_authenticated %}
+                    {% if user_rating %}
+                        <div class="text-center py-3">
+                            <div style="font-size: 2rem; font-weight: 800; color: #00E054;">{{ user_rating.score }}<span style="font-size: 1rem; color: #9ab;">/10</span></div>
+                            <p style="color: #9ab; font-size: 0.9rem;" class="mb-0">Zaten puan verdiniz.</p>
+                        </div>
+                    {% else %}
+                        <form method="post" action="{% url 'ratings:rate_article' article.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Puan (1-10)</label>
+                                <input type="number" name="score" min="1" max="10" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Yorum <span style="color: #9ab; font-weight: 400;">(opsiyonel)</span></label>
+                                <textarea name="review_text" rows="4" class="form-control" placeholder="Bu makale hakkında ne düşünüyorsunuz?"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-brand w-100">Puanı Kaydet</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <p style="color: #9ab;" class="mb-3">Puan vermek için giriş yapmalısınız.</p>
+                        <a href="{% url 'users:login' %}" class="btn btn-brand w-100">Giriş Yap</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Yorumlar Listesi -->
+        <div class="col-lg-8">
+            <h5 class="text-uppercase mb-3" style="color: #9ab; letter-spacing: 1px; font-size: 0.85rem;">
+                <i class="bi bi-chat-dots me-1"></i> Yorumlar ({{ ratings.count }})
+            </h5>
+
+            {% for rating in ratings %}
+            <div class="card-custom p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong style="color: #deeeff;">{{ rating.user.username }}</strong>
+                    <span style="color: #00E054; font-weight: 800; font-size: 1.1rem;">
+                        {{ rating.score }}<span style="color: #9ab; font-size: 0.8rem; font-weight: 400;">/10</span>
+                    </span>
+                </div>
+                {% if rating.review_text %}
+                    <p class="mb-1" style="color: #9ab; font-size: 0.95rem;">{{ rating.review_text }}</p>
+                {% endif %}
+                <small style="color: #455568;">{{ rating.created_at|date:"d M Y" }}</small>
+            </div>
+            {% empty %}
+            <div class="text-center py-5" style="color: #9ab;">
+                <i class="bi bi-chat-x display-4 d-block mb-3" style="color: #2c3440;"></i>
+                Henüz yorum yapılmamış. İlk yorumu siz yapın!
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'articles:home' %}" style="color: #9ab; text-decoration: none; font-size: 0.9rem;">
+            <i class="bi bi-arrow-left me-1"></i> Tüm Makalelere Dön
+        </a>
+    </div>
+
+</div>
+{% endblock %}
