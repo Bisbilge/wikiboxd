@@ -14,6 +14,7 @@ class Category(models.Model):
 class Article(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
+    wiki_url = models.URLField(max_length=500, null=True, blank=True, unique=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='articles')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='articles')
     created_at = models.DateTimeField(auto_now_add=True)
