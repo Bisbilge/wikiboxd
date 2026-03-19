@@ -142,6 +142,11 @@ def home(request):
     }
     return render(request, 'index.html', context)
 
+def article_list(request):
+    articles = Article.objects.all().order_by('-created_at')
+    return render(request, 'articles/article_list.html', {'articles': articles})
+
+
 def detail(request, pk):
     article = get_object_or_404(Article, pk=pk)
     ratings = article.ratings.select_related('user').order_by('-created_at')
