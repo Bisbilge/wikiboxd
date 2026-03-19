@@ -120,11 +120,25 @@ def wiki_embed_proxy(request, pk):
 
 
 def home(request):
-    # Veritabanındaki tüm makaleleri en yeniler üstte olacak şekilde çekiyoruz
+    from ratings.models import Rating
+    from comments.models import Comment
+    from django.contrib.auth.models import User
+    from django.db.models import Count
+
     articles_list = Article.objects.all().order_by('-created_at')
 
+    # En çok puanlanan makaleler
+    top_articles = Article.objects.annotate(
+        rating_count=Count('ratings')
+    ).filter(rating_count__gt=0).order_by('-rating_count')[:5]
+
     context = {
-        'articles': articles_list
+        'articles': articles_list,
+        'top_articles': top_articles,
+        'total_articles': articles_list.count(),
+        'total_ratings': Rating.objects.count(),
+        'total_users': User.objects.count(),
+        'total_comments': Comment.objects.count(),
     }
     return render(request, 'index.html', context)
 

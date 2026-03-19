@@ -1,56 +1,153 @@
 {% extends 'base.html' %}
 
-{% block title %}Wikiboxd - Wiki Makalelerini Puanla{% endblock %}
+{% block title %}Wikiboxd — Wikipedia Makalelerini Puanla ve Yorumla{% endblock %}
 
 {% block content %}
 
-{% if not user.is_authenticated %}
-<div style="background-color: #eaf3fb; border-bottom: 1px solid #a2a9b1;" class="py-5 mb-4">
+<!-- Hero -->
+<div style="background: linear-gradient(135deg, #eaf3fb 0%, #f8f9fa 100%); border-bottom: 1px solid #a2a9b1;" class="py-5">
     <div class="container">
-        <div class="row justify-content-center text-center">
-            <div class="col-lg-7">
-                <h1 class="fw-bold mb-3" style="font-family: 'Linux Libertine', Georgia, serif; font-size: 2.2rem; color: #202122;">
-                    Okuduğun Wikipedia makalelerini logla, puanla, yorumla.
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h1 class="fw-bold mb-3" style="font-family: 'Linux Libertine', Georgia, serif; font-size: 2.4rem; color: #202122; line-height: 1.2;">
+                    Wikipedia makalelerini oku,<br>puanla ve yorumla.
                 </h1>
-                <p class="lead mb-4 text-muted">
-                    Hangi Wikipedia makaleleri gerçekten ufuk açıcı? Oku, puanla ve diğer okuyuculara rehberlik et.
+                <p class="mb-4" style="color: #54595d; font-size: 1.05rem; line-height: 1.7;">
+                    Wikiboxd, Wikipedia makaleleri için sosyal bir platformdur. Makaleleri keşfet, 10 üzerinden puanla, incelemeler yaz ve diğer okuyucuların görüşlerini öğren.
                 </p>
-                <a href="{% url 'users:register' %}" class="btn btn-brand btn-lg px-5">Hesap Oluştur — Ücretsiz</a>
+                {% if not user.is_authenticated %}
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{% url 'users:register' %}" class="btn btn-brand btn-lg px-4">Hesap Oluştur — Ücretsiz</a>
+                    <a href="{% url 'users:login' %}" class="btn btn-outline-wiki btn-lg px-4">Giriş Yap</a>
+                </div>
+                {% else %}
+                <a href="{% url 'articles:wiki_search' %}" class="btn btn-brand btn-lg px-4">
+                    <i class="bi bi-search me-2"></i>Makale Ara ve Ekle
+                </a>
+                {% endif %}
+            </div>
+            <div class="col-lg-6">
+                <!-- İstatistik Kartları -->
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card-custom p-3 text-center">
+                            <div style="font-size: 2rem; font-weight: 800; color: #3366cc;">{{ total_articles }}</div>
+                            <div class="text-muted" style="font-size: 0.85rem;">Makale</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card-custom p-3 text-center">
+                            <div style="font-size: 2rem; font-weight: 800; color: #3366cc;">{{ total_ratings }}</div>
+                            <div class="text-muted" style="font-size: 0.85rem;">Puanlama</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card-custom p-3 text-center">
+                            <div style="font-size: 2rem; font-weight: 800; color: #3366cc;">{{ total_comments }}</div>
+                            <div class="text-muted" style="font-size: 0.85rem;">Yorum</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card-custom p-3 text-center">
+                            <div style="font-size: 2rem; font-weight: 800; color: #3366cc;">{{ total_users }}</div>
+                            <div class="text-muted" style="font-size: 0.85rem;">Kullanıcı</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endif %}
 
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3 pb-2" style="border-bottom: 1px solid #a2a9b1;">
-        <h5 class="section-title mb-0">Sistemdeki Makaleler</h5>
-    </div>
+<div class="container mt-5">
+    <div class="row g-5">
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-        {% for article in articles %}
-        <div class="col">
-            <a href="{% url 'articles:detail' article.id %}" class="text-decoration-none">
-                <div class="card h-100 card-custom p-3 d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge" style="background-color: #eaf3fb; color: #3366cc; border: 1px solid #a2c4e8; font-weight: 600;">Wiki</span>
-                        <small class="text-muted"><i class="bi bi-star"></i> Puanla</small>
+        <!-- Sol: Makaleler Listesi -->
+        <div class="col-lg-8">
+
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-4" style="border-bottom: 1px solid #a2a9b1;">
+                <h5 class="section-title mb-0">Son Eklenen Makaleler</h5>
+                {% if user.is_authenticated %}
+                <a href="{% url 'articles:wiki_search' %}" class="btn btn-outline-wiki btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>Makale Ekle
+                </a>
+                {% endif %}
+            </div>
+
+            {% for article in articles %}
+            <div class="card-custom p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="flex-grow-1">
+                        <a href="{% url 'articles:detail' article.id %}" style="font-size: 1.05rem; font-weight: 600; font-family: 'Linux Libertine', Georgia, serif; color: #3366cc; text-decoration: none;">
+                            {{ article.title }}
+                        </a>
+                        <p class="text-muted mb-1 mt-1" style="font-size: 0.87rem; line-height: 1.5;">
+                            {{ article.content|striptags|truncatechars:160 }}
+                        </p>
+                        <small class="text-muted">
+                            <i class="bi bi-person me-1"></i>{{ article.author.username|default:"Anonim" }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-calendar3 me-1"></i>{{ article.created_at|date:"d M Y" }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-star me-1"></i>{{ article.ratings.count }} puan
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-chat me-1"></i>{{ article.comments.count }} yorum
+                        </small>
                     </div>
-                    <h6 class="mt-1 mb-2" style="color: #202122; font-family: 'Linux Libertine', Georgia, serif;">{{ article.title }}</h6>
-                    <p class="mt-auto mb-1" style="font-size: 0.82rem; color: #54595d;">
-                        {{ article.content|truncatechars:80 }}
-                    </p>
-                    <div class="text-muted mt-2" style="font-size: 0.75rem;">{{ article.created_at|date:"d M Y" }}</div>
+                    <a href="{% url 'articles:detail' article.id %}" class="btn btn-outline-wiki btn-sm text-nowrap">
+                        Oku →
+                    </a>
                 </div>
-            </a>
+            </div>
+            {% empty %}
+            <div class="text-center py-5">
+                <i class="bi bi-journal-x display-3 text-muted mb-3 d-block"></i>
+                <h5 class="text-muted">Henüz hiç makale eklenmemiş</h5>
+                <p class="text-muted mb-4">Wikipedia'dan bir makale arayarak başlayabilirsin.</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'articles:wiki_search' %}" class="btn btn-brand">Makale Ara</a>
+                {% else %}
+                <a href="{% url 'users:register' %}" class="btn btn-brand">Hesap Oluştur</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+
         </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <i class="bi bi-journal-x display-1 text-muted"></i>
-            <h5 class="mt-3" style="color: #54595d;">Henüz hiç makale eklenmemiş</h5>
-            <p class="text-muted">Arama yaparak Wikipedia'dan ilk makaleyi ekleyebilirsin.</p>
+
+        <!-- Sağ: Kenar Çubuğu -->
+        <div class="col-lg-4">
+
+            <!-- Nasıl Çalışır -->
+            <div class="card-custom p-4 mb-4">
+                <h6 class="section-title mb-3">Wikiboxd Nedir?</h6>
+                <ul class="list-unstyled mb-0" style="font-size: 0.9rem; color: #54595d; line-height: 2;">
+                    <li><i class="bi bi-search text-primary me-2"></i>Wikipedia'dan makale ara</li>
+                    <li><i class="bi bi-plus-circle text-primary me-2"></i>Makaleyi platforma ekle</li>
+                    <li><i class="bi bi-star text-primary me-2"></i>1–10 arası puan ver</li>
+                    <li><i class="bi bi-chat text-primary me-2"></i>İnceleme ve yorum yaz</li>
+                    <li><i class="bi bi-people text-primary me-2"></i>Diğer okuyucuları keşfet</li>
+                </ul>
+            </div>
+
+            <!-- En Çok Puanlanan -->
+            {% if top_articles %}
+            <div class="card-custom p-4">
+                <h6 class="section-title mb-3">En Çok Puanlanan</h6>
+                <ul class="list-unstyled mb-0">
+                    {% for article in top_articles %}
+                    <li class="mb-2 pb-2" style="{% if not forloop.last %}border-bottom: 1px solid #eaecf0;{% endif %}">
+                        <a href="{% url 'articles:detail' article.id %}" style="font-size: 0.9rem; color: #3366cc; text-decoration: none; font-weight: 500;">
+                            {{ article.title }}
+                        </a>
+                        <small class="d-block text-muted" style="font-size: 0.78rem;">{{ article.rating_count }} puanlama</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
         </div>
-        {% endfor %}
+
     </div>
 </div>
 
