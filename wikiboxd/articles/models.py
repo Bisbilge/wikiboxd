@@ -13,6 +13,7 @@ class Category(models.Model):
 
 class Article(models.Model):
     title = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
     content = models.TextField()
     wiki_url = models.URLField(max_length=500, null=True, blank=True, unique=True)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='articles')
