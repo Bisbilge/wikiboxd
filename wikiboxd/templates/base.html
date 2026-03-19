@@ -108,7 +108,7 @@
             font-size: 0.9rem;
         }
         .form-control,
-        input:not([type="submit"]):not([type="button"]),
+        input:not([type="submit"]):not([type="button"]):not(.navbar-search-input),
         select,
         textarea {
             background-color: #fff !important;
@@ -120,6 +120,29 @@
             margin-bottom: 1rem;
             font-size: 0.9rem;
             transition: border-color 0.15s;
+        }
+
+        /* Navbar arama kutusu */
+        .navbar-search-input {
+            background-color: #fff !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--border) !important;
+            border-right: none !important;
+            border-radius: 2px 0 0 2px !important;
+            padding: 6px 12px !important;
+            font-size: 0.9rem;
+            width: 100%;
+            margin-bottom: 0 !important;
+            transition: border-color 0.15s;
+        }
+        .navbar-search-input:focus {
+            border-color: var(--brand) !important;
+            outline: none;
+            box-shadow: none !important;
+        }
+        .navbar-search-input:disabled {
+            background-color: #f8f9fa !important;
+            cursor: not-allowed;
         }
         .form-control:focus,
         input:focus,
@@ -186,21 +209,44 @@
 
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="/">
+            <!-- Logo -->
+            <a class="navbar-brand me-4" href="/">
                 <i class="bi bi-journal-bookmark-fill" style="color: var(--brand);"></i>
                 Wiki<span>boxd</span>
             </a>
+
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <i class="bi bi-list fs-2" style="color: var(--text-muted);"></i>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center gap-1">
-                    <li class="nav-item"><a class="nav-link" href="/">Makaleler</a></li>
+
+            <div class="collapse navbar-collapse d-lg-flex align-items-center" id="navbarNav">
+
+                <!-- Orta: Arama Kutusu -->
+                <form class="d-flex mx-lg-4 my-2 my-lg-0 flex-grow-1" method="get" action="{% url 'articles:wiki_search' %}">
+                    <div class="d-flex w-100" style="max-width: 480px;">
+                        <input
+                            type="text"
+                            name="q"
+                            class="navbar-search-input flex-grow-1"
+                            placeholder="Wikipedia'da makale ara..."
+                            {% if not user.is_authenticated %}disabled title="Arama için giriş yapın"{% endif %}
+                        >
+                        <button
+                            type="submit"
+                            class="btn btn-brand"
+                            style="border-radius: 0 2px 2px 0; padding: 6px 14px; white-space: nowrap;"
+                            {% if not user.is_authenticated %}disabled{% endif %}
+                        >
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Sağ: Kullanıcı Menüsü -->
+                <ul class="navbar-nav align-items-center gap-1 ms-auto">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'articles:wiki_search' %}">
-                                <i class="bi bi-search me-1"></i>Ara
-                            </a>
+                            <a class="nav-link" href="/">Makaleler</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'users:profile' %}" style="color: var(--brand) !important; font-weight: 600;">
