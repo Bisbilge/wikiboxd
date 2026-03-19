@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Avg
+from django.views.decorators.clickjacking import xframe_options_exempt
 import requests
 from .models import Article
 from comments.forms import CommentForm
@@ -42,20 +43,31 @@ def wiki_import(request, wiki_title):
     if existing:
         return redirect('articles:detail', pk=existing.pk)
 
+    headers = {'User-Agent': 'Wikiboxd/1.0 (galatasaray-uni-project)'}
     try:
-        response = requests.get(
+        # Başlık için summary endpoint'i
+        summary_resp = requests.get(
             f'https://tr.wikipedia.org/api/rest_v1/page/summary/{wiki_title}',
-            headers={'User-Agent': 'Wikiboxd/1.0 (galatasaray-uni-project)'},
+            headers=headers,
             timeout=5
         )
-        if response.status_code != 200:
+        if summary_resp.status_code != 200:
             messages.error(request, 'Makale Wikipedia\'da bulunamadı.')
             return redirect('articles:wiki_search')
 
-        data = response.json()
+        # Tam makale HTML'i için html endpoint'i
+        html_resp = requests.get(
+            f'https://tr.wikipedia.org/api/rest_v1/page/html/{wiki_title}',
+            headers=headers,
+            timeout=10
+        )
+
+        title = summary_resp.json()['title']
+        content = html_resp.text if html_resp.status_code == 200 else summary_resp.json().get('extract', '')
+
         article = Article.objects.create(
-            title=data['title'],
-            content=data.get('extract', ''),
+            title=title,
+            content=content,
             wiki_url=wiki_url,
             author=request.user,
         )
@@ -65,6 +77,46 @@ def wiki_import(request, wiki_title):
     except requests.RequestException:
         messages.error(request, 'Wikipedia\'ya bağlanılamadı. Lütfen tekrar deneyin.')
         return redirect('articles:wiki_search')
+
+
+@xframe_options_exempt
+def wiki_embed_proxy(request, pk):
+    from django.http import HttpResponse
+    article = get_object_or_404(Article, pk=pk)
+
+    if not article.wiki_url:
+        return HttpResponse('<p>Wikipedia linki yok.</p>', content_type='text/html')
+
+    wiki_title = article.wiki_url.split('/wiki/')[-1]
+    headers = {'User-Agent': 'Wikiboxd/1.0 (galatasaray-uni-project)'}
+
+    try:
+        resp = requests.get(
+            f'https://tr.wikipedia.org/api/rest_v1/page/html/{wiki_title}',
+            headers=headers,
+            timeout=10
+        )
+        html = resp.text
+        # Göreli URL'leri Wikipedia'ya yönlendir
+        html = html.replace('href="//', 'href="https://')
+        html = html.replace('src="//', 'src="https://')
+        html = html.replace('href="/', 'href="https://tr.wikipedia.org/')
+        html = html.replace('src="/', 'src="https://tr.wikipedia.org/')
+        # Wikipedia'nın temel stilini ekle
+        style = '''
+        <base target="_blank">
+        <link rel="stylesheet" href="https://tr.wikipedia.org/w/load.php?modules=mediawiki.legacy.commonPrint,shared|mediawiki.skinning.elements|mediawiki.skinning.content|mediawiki.skinning.interface|skins.vector.styles&only=styles&skin=vector">
+        <style>
+            body { font-family: -apple-system, Linux Libertine, Georgia, serif; font-size: 14px; line-height: 1.7; padding: 1.5rem 2rem; color: #202122; background: #fff; }
+            h1,h2,h3 { font-family: Linux Libertine, Georgia, serif; border-bottom: 1px solid #a2a9b1; }
+            table { border-collapse: collapse; }
+            td, th { border: 1px solid #a2a9b1; padding: 4px 8px; }
+        </style>
+        '''
+        html = style + html
+        return HttpResponse(html, content_type='text/html; charset=utf-8')
+    except requests.RequestException:
+        return HttpResponse('<p>Wikipedia\'ya bağlanılamadı.</p>', content_type='text/html')
 
 
 def home(request):

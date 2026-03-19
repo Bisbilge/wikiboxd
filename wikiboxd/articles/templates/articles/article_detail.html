@@ -41,19 +41,16 @@
 
         <hr style="border-color: #2c3440; margin: 1.5rem 0;">
 
-        <!-- Makale İçeriği -->
-        <div style="
-            max-height: 500px;
-            overflow-y: auto;
-            line-height: 1.9;
-            font-size: 1rem;
-            color: #deeeff;
-            padding-right: 0.5rem;
-            scrollbar-width: thin;
-            scrollbar-color: #2c3440 transparent;
-        ">
-            {{ article.content }}
-        </div>
+        <!-- Wikipedia Gömülü Görünüm -->
+        {% if article.wiki_url %}
+        <iframe
+            src="{% url 'articles:wiki_embed' article.pk %}"
+            style="width: 100%; height: 600px; border: none; border-radius: 6px;"
+            loading="lazy"
+        ></iframe>
+        {% else %}
+        <p style="color: #9ab;">{{ article.content }}</p>
+        {% endif %}
     </div>
 
     <div class="row g-4">
