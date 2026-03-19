@@ -3,95 +3,49 @@
 {% block title %}Profili Düzenle - Wikiboxd{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card card-custom p-4 shadow">
-                <h3 class="text-white text-center mb-4">Profil Ayarları</h3>
-                
+        <div class="col-md-7 col-lg-6">
+            <div class="card-custom p-4">
+                <h4 class="mb-4" style="font-family: 'Linux Libertine', Georgia, serif; border-bottom: 1px solid #eaecf0; padding-bottom: 0.75rem;">
+                    Profil Ayarları
+                </h4>
+
                 <form method="POST">
                     {% csrf_token %}
-                    
-                    <h5 class="text-white mt-2 border-bottom pb-2" style="border-color: #455568 !important;">
-                        <i class="fas fa-user-cog me-2"></i>Kullanıcı Bilgileri
-                    </h5>
-                    
+
+                    <p class="section-title mb-3">Kullanıcı Bilgileri</p>
                     {% for field in user_form %}
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold text-uppercase">{{ field.label }}</label>
+                            <label class="form-label">{{ field.label }}</label>
                             {{ field }}
                             {% if field.help_text %}
-                                <small class="form-text text-muted d-block">{{ field.help_text }}</small>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.8rem;">{{ field.help_text }}</small>
                             {% endif %}
                             {% for error in field.errors %}
-                                <p class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</p>
+                                <p class="text-danger small mt-1">{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endfor %}
 
-                    <h5 class="text-white mt-4 border-bottom pb-2" style="border-color: #455568 !important;">
-                        <i class="fas fa-id-card me-2"></i>Profil Detayları
-                    </h5>
-                    
+                    <p class="section-title mt-4 mb-3">Profil Detayları</p>
                     {% for field in profile_form %}
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold text-uppercase">{{ field.label }}</label>
+                            <label class="form-label">{{ field.label }}</label>
                             {{ field }}
                             {% for error in field.errors %}
-                                <p class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</p>
+                                <p class="text-danger small mt-1">{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endfor %}
-                    
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-brand fw-bold py-2">
-                            DEĞİŞİKLİKLERİ KAYDET
-                        </button>
-                        <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary btn-sm">Vazgeç</a>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-brand">Değişiklikleri Kaydet</button>
+                        <a href="{% url 'users:profile' %}" class="btn btn-outline-wiki">Vazgeç</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    /* Wikiboxd Form Elemanları Tasarımı */
-    input, select, textarea {
-        background-color: #14181C !important;
-        color: #fff !important;
-        border: 1px solid #455568 !important;
-        border-radius: 4px;
-        padding: 10px 12px;
-        width: 100%;
-        transition: border-color 0.2s;
-    }
-    
-    input:focus, textarea:focus {
-        border-color: #00E054 !important;
-        outline: none;
-        box-shadow: 0 0 0 0.1rem rgba(0, 224, 84, 0.25) !important;
-    }
-
-    textarea {
-        min-height: 100px;
-        resize: vertical;
-    }
-
-    .card-custom {
-        background-color: #1b2228;
-        border: 1px solid #2c3440;
-    }
-
-    .btn-brand {
-        background-color: #00E054;
-        color: #000;
-        border: none;
-    }
-
-    .btn-brand:hover {
-        background-color: #00c048;
-        color: #000;
-    }
-</style>
 {% endblock %}

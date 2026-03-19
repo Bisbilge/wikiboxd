@@ -5,8 +5,8 @@
 {% block content %}
 <div class="container mt-4" style="max-width: 800px;">
 
-    <h2 class="text-white fw-bold mb-1">Wikipedia'da Ara</h2>
-    <p style="color: #9ab;" class="mb-4">Aradığın makaleyi bul ve Wikiboxd'a ekle.</p>
+    <h2 class="mb-1" style="font-family: 'Linux Libertine', Georgia, serif;">Wikipedia'da Ara</h2>
+    <p class="text-muted mb-4" style="font-size: 0.9rem;">Aradığın makaleyi bul ve Wikiboxd'a ekle.</p>
 
     <form method="get" action="{% url 'articles:wiki_search' %}" class="d-flex gap-2 mb-5">
         <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Makale adı girin... (örn: Mustafa Kemal Atatürk)" autofocus>
@@ -15,14 +15,14 @@
 
     {% if query %}
         {% if results %}
-            <p style="color: #9ab; font-size: 0.85rem;" class="mb-3">
+            <p class="text-muted mb-3" style="font-size: 0.85rem;">
                 "{{ query }}" için {{ results|length }} sonuç bulundu.
             </p>
             {% for result in results %}
             <div class="card-custom p-3 mb-3 d-flex justify-content-between align-items-start gap-3">
                 <div>
-                    <h6 class="text-white mb-1">{{ result.title }}</h6>
-                    <p class="mb-0" style="color: #9ab; font-size: 0.9rem;">
+                    <h6 class="mb-1" style="color: #202122;">{{ result.title }}</h6>
+                    <p class="mb-0 text-muted" style="font-size: 0.88rem;">
                         {{ result.snippet|striptags|truncatechars:150 }}
                     </p>
                 </div>
@@ -32,8 +32,8 @@
             </div>
             {% endfor %}
         {% else %}
-            <div class="text-center py-5" style="color: #9ab;">
-                <i class="bi bi-search display-4 d-block mb-3" style="color: #2c3440;"></i>
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-search display-4 d-block mb-3"></i>
                 "{{ query }}" için sonuç bulunamadı.
             </div>
         {% endif %}
