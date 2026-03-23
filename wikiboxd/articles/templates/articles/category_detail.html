@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.get_full_name }} — Wikiboxd{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Başlık -->
+    <div class="pb-2 mb-4" style="border-bottom: 1px solid #a2a9b1;">
+        <nav aria-label="breadcrumb" style="font-size: .85rem;">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'articles:article_list' %}" style="color:#3366cc;">Makaleler</a></li>
+                {% if category.parent %}
+                <li class="breadcrumb-item"><a href="{% url 'articles:category_detail' category.parent.slug %}" style="color:#3366cc;">{{ category.parent.name }}</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active">{{ category.name }}</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0" style="font-family: 'Linux Libertine', Georgia, serif;">{{ category.get_full_name }}</h4>
+        {% if category.description %}
+        <p class="text-muted mt-1 mb-0" style="font-size: .9rem;">{{ category.description }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Alt kategoriler -->
+    {% if subcategories %}
+    <div class="mb-4">
+        <h6 class="fw-semibold mb-2">Alt Kategoriler</h6>
+        <div class="d-flex flex-wrap gap-2">
+            {% for sub in subcategories %}
+            <a href="{% url 'articles:category_detail' sub.slug %}"
+               class="badge text-decoration-none py-2 px-3"
+               style="background-color: #eaf3fb; color: #3366cc; font-size: .85rem;">
+                {{ sub.name }}
+                <span class="ms-1 opacity-75">({{ sub.article_count }})</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Makaleler -->
+    {% for article in articles %}
+    <div class="card-custom p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+            <div class="flex-grow-1">
+                <a href="{% url 'articles:detail' article.id %}"
+                   style="font-size: 1.05rem; font-weight: 600; font-family: 'Linux Libertine', Georgia, serif; color: #3366cc; text-decoration: none;">
+                    {{ article.title }}
+                </a>
+                <p class="text-muted mb-1 mt-1" style="font-size: 0.87rem; line-height: 1.5;">
+                    {{ article.description|default:article.content|striptags|truncatechars:160 }}
+                </p>
+                <small class="text-muted">
+                    <i class="bi bi-person me-1"></i>{{ article.author.username|default:"Anonim" }}
+                    &nbsp;·&nbsp;
+                    <i class="bi bi-calendar3 me-1"></i>{{ article.created_at|date:"d M Y" }}
+                    &nbsp;·&nbsp;
+                    <i class="bi bi-star me-1"></i>
+                    {% if article.avg_score %}{{ article.avg_score|floatformat:1 }} / 10{% else %}Puansız{% endif %}
+                    ({{ article.rating_count }} oy)
+                </small>
+            </div>
+            <a href="{% url 'articles:detail' article.id %}" class="btn btn-outline-wiki btn-sm text-nowrap">Oku →</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <i class="bi bi-journal-x display-3 text-muted mb-3 d-block"></i>
+        <h5 class="text-muted">Bu kategoride henüz makale yok</h5>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

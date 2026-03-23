@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Avg
+from django.db.models import Avg, Count, Q
 from django.views.decorators.clickjacking import xframe_options_exempt
 import requests
-from .models import Article
+from .models import Article, Category
 from comments.forms import CommentForm
 
 @login_required
@@ -146,8 +146,67 @@ def home(request):
     return render(request, 'index.html', context)
 
 def article_list(request):
-    articles = Article.objects.all().order_by('-created_at')
-    return render(request, 'articles/article_list.html', {'articles': articles})
+    articles = Article.objects.select_related('author', 'category').annotate(
+        avg_score=Avg('ratings__score'),
+        rating_count=Count('ratings'),
+    )
+
+    # --- Filtreleme ---
+    q = request.GET.get('q', '').strip()
+    category_slug = request.GET.get('kategori', '').strip()
+    sort = request.GET.get('siralama', 'yeni')
+
+    if q:
+        articles = articles.filter(Q(title__icontains=q) | Q(content__icontains=q))
+
+    selected_category = None
+    if category_slug:
+        selected_category = Category.objects.filter(slug=category_slug).first()
+        if selected_category:
+            # Seçilen kategori veya alt kategorileri
+            sub_ids = list(selected_category.subcategories.values_list('id', flat=True))
+            cat_ids = [selected_category.id] + sub_ids
+            articles = articles.filter(category_id__in=cat_ids)
+
+    # --- Sıralama ---
+    sort_options = {
+        'yeni': '-created_at',
+        'eski': 'created_at',
+        'puan': '-avg_score',
+        'puan_sayisi': '-rating_count',
+    }
+    articles = articles.order_by(sort_options.get(sort, '-created_at'))
+
+    # Sidebar için tüm ana kategoriler
+    categories = Category.objects.filter(parent=None).prefetch_related('subcategories').annotate(
+        article_count=Count('articles')
+    )
+
+    context = {
+        'articles': articles,
+        'categories': categories,
+        'selected_category': selected_category,
+        'q': q,
+        'sort': sort,
+    }
+    return render(request, 'articles/article_list.html', context)
+
+
+def category_detail(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    sub_ids = list(category.subcategories.values_list('id', flat=True))
+    cat_ids = [category.id] + sub_ids
+    articles = Article.objects.filter(category_id__in=cat_ids).select_related('author', 'category').annotate(
+        avg_score=Avg('ratings__score'),
+        rating_count=Count('ratings'),
+    ).order_by('-created_at')
+    subcategories = category.subcategories.annotate(article_count=Count('articles'))
+    context = {
+        'category': category,
+        'articles': articles,
+        'subcategories': subcategories,
+    }
+    return render(request, 'articles/category_detail.html', context)
 
 
 def detail(request, pk):

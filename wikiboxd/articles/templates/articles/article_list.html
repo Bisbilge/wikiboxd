@@ -5,47 +5,159 @@
 {% block content %}
 <div class="container mt-4">
 
-    <div class="d-flex justify-content-between align-items-center pb-2 mb-4" style="border-bottom: 1px solid #a2a9b1;">
-        <h4 class="mb-0" style="font-family: 'Linux Libertine', Georgia, serif;">Tüm Makaleler</h4>
-        {% if user.is_authenticated %}
-        <a href="{% url 'articles:wiki_search' %}" class="btn btn-outline-wiki btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>Makale Ekle
-        </a>
-        {% endif %}
-    </div>
+    <div class="row g-4">
 
-    {% for article in articles %}
-    <div class="card-custom p-3 mb-3">
-        <div class="d-flex justify-content-between align-items-start gap-3">
-            <div class="flex-grow-1">
-                <a href="{% url 'articles:detail' article.id %}" style="font-size: 1.05rem; font-weight: 600; font-family: 'Linux Libertine', Georgia, serif; color: #3366cc; text-decoration: none;">
-                    {{ article.title }}
-                </a>
-                <p class="text-muted mb-1 mt-1" style="font-size: 0.87rem; line-height: 1.5;">
-                    {{ article.description|default:article.content|striptags|truncatechars:160 }}
-                </p>
-                <small class="text-muted">
-                    <i class="bi bi-person me-1"></i>{{ article.author.username|default:"Anonim" }}
-                    &nbsp;·&nbsp;
-                    <i class="bi bi-calendar3 me-1"></i>{{ article.created_at|date:"d M Y" }}
-                    &nbsp;·&nbsp;
-                    <i class="bi bi-star me-1"></i>{{ article.ratings.count }} puan
-                    &nbsp;·&nbsp;
-                    <i class="bi bi-chat me-1"></i>{{ article.comments.count }} yorum
-                </small>
+        <!-- Sol: Kategoriler sidebar -->
+        <div class="col-lg-3">
+            <div class="card-custom p-3 mb-3">
+                <h6 class="fw-semibold mb-3" style="border-bottom: 1px solid #a2a9b1; padding-bottom: .5rem;">
+                    <i class="bi bi-tags me-1"></i>Kategoriler
+                </h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-1">
+                        <a href="{% url 'articles:article_list' %}{% if q %}?q={{ q }}{% endif %}"
+                           class="text-decoration-none {% if not selected_category %}fw-semibold{% endif %}"
+                           style="color: #3366cc; font-size: .9rem;">
+                            Tümü
+                        </a>
+                    </li>
+                    {% for cat in categories %}
+                    <li class="mb-1">
+                        <a href="{% url 'articles:article_list' %}?kategori={{ cat.slug }}{% if q %}&q={{ q }}{% endif %}{% if sort %}&siralama={{ sort }}{% endif %}"
+                           class="text-decoration-none {% if selected_category.slug == cat.slug %}fw-semibold{% endif %}"
+                           style="color: #3366cc; font-size: .9rem;">
+                            {{ cat.name }}
+                            <span class="text-muted" style="font-size:.78rem;">({{ cat.article_count }})</span>
+                        </a>
+                        {% if cat.subcategories.all %}
+                        <ul class="list-unstyled ms-3 mt-1">
+                            {% for sub in cat.subcategories.all %}
+                            <li class="mb-1">
+                                <a href="{% url 'articles:article_list' %}?kategori={{ sub.slug }}{% if q %}&q={{ q }}{% endif %}{% if sort %}&siralama={{ sort }}{% endif %}"
+                                   class="text-decoration-none {% if selected_category.slug == sub.slug %}fw-semibold{% endif %}"
+                                   style="color: #555; font-size: .85rem;">
+                                    ↳ {{ sub.name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
-            <a href="{% url 'articles:detail' article.id %}" class="btn btn-outline-wiki btn-sm text-nowrap">Oku →</a>
+        </div>
+
+        <!-- Sağ: Makale listesi -->
+        <div class="col-lg-9">
+
+            <!-- Başlık ve Ekle butonu -->
+            <div class="d-flex justify-content-between align-items-center pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
+                <h4 class="mb-0" style="font-family: 'Linux Libertine', Georgia, serif;">
+                    {% if selected_category %}
+                        {{ selected_category.get_full_name }} Makaleleri
+                    {% else %}
+                        Tüm Makaleler
+                    {% endif %}
+                </h4>
+                {% if user.is_authenticated %}
+                <a href="{% url 'articles:wiki_search' %}" class="btn btn-outline-wiki btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>Makale Ekle
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Arama & Sıralama formu -->
+            <form method="get" class="row g-2 mb-4">
+                {% if selected_category %}
+                <input type="hidden" name="kategori" value="{{ selected_category.slug }}">
+                {% endif %}
+                <div class="col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ q }}" class="form-control"
+                               placeholder="Başlık veya içerik ara…">
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <select name="siralama" class="form-select form-select-sm">
+                        <option value="yeni" {% if sort == 'yeni' %}selected{% endif %}>En Yeni</option>
+                        <option value="eski" {% if sort == 'eski' %}selected{% endif %}>En Eski</option>
+                        <option value="puan" {% if sort == 'puan' %}selected{% endif %}>En Yüksek Puan</option>
+                        <option value="puan_sayisi" {% if sort == 'puan_sayisi' %}selected{% endif %}>En Çok Puanlanan</option>
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-outline-wiki btn-sm w-100">Filtrele</button>
+                </div>
+            </form>
+
+            <!-- Sonuç sayısı -->
+            {% if q or selected_category %}
+            <p class="text-muted mb-3" style="font-size: .88rem;">
+                <strong>{{ articles|length }}</strong> makale bulundu
+                {% if q %} — "<em>{{ q }}</em>" araması{% endif %}
+            </p>
+            {% endif %}
+
+            <!-- Makale kartları -->
+            {% for article in articles %}
+            <div class="card-custom p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                            <a href="{% url 'articles:detail' article.id %}"
+                               style="font-size: 1.05rem; font-weight: 600; font-family: 'Linux Libertine', Georgia, serif; color: #3366cc; text-decoration: none;">
+                                {{ article.title }}
+                            </a>
+                            {% if article.category %}
+                            <a href="{% url 'articles:article_list' %}?kategori={{ article.category.slug }}"
+                               class="badge text-decoration-none"
+                               style="background-color: #eaf3fb; color: #3366cc; font-size: .75rem; font-weight: 500;">
+                                {{ article.category.get_full_name }}
+                            </a>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted mb-1" style="font-size: 0.87rem; line-height: 1.5;">
+                            {{ article.description|default:article.content|striptags|truncatechars:160 }}
+                        </p>
+                        <small class="text-muted">
+                            <i class="bi bi-person me-1"></i>{{ article.author.username|default:"Anonim" }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-calendar3 me-1"></i>{{ article.created_at|date:"d M Y" }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-star me-1"></i>
+                            {% if article.avg_score %}
+                                {{ article.avg_score|floatformat:1 }} / 10
+                            {% else %}
+                                Puansız
+                            {% endif %}
+                            ({{ article.rating_count }} oy)
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-chat me-1"></i>{{ article.comments.count }} yorum
+                        </small>
+                    </div>
+                    <a href="{% url 'articles:detail' article.id %}" class="btn btn-outline-wiki btn-sm text-nowrap">Oku →</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5">
+                <i class="bi bi-journal-x display-3 text-muted mb-3 d-block"></i>
+                <h5 class="text-muted">
+                    {% if q %}
+                        "{{ q }}" için sonuç bulunamadı
+                    {% else %}
+                        Henüz hiç makale eklenmemiş
+                    {% endif %}
+                </h5>
+                {% if user.is_authenticated %}
+                <a href="{% url 'articles:wiki_search' %}" class="btn btn-brand mt-3">Makale Ara</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+
         </div>
     </div>
-    {% empty %}
-    <div class="text-center py-5">
-        <i class="bi bi-journal-x display-3 text-muted mb-3 d-block"></i>
-        <h5 class="text-muted">Henüz hiç makale eklenmemiş</h5>
-        {% if user.is_authenticated %}
-        <a href="{% url 'articles:wiki_search' %}" class="btn btn-brand mt-3">Makale Ara</a>
-        {% endif %}
-    </div>
-    {% endfor %}
 
 </div>
 {% endblock %}
