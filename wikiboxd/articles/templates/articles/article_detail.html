@@ -80,10 +80,6 @@
                                 <label class="form-label">Puan (1-10)</label>
                                 <input type="number" name="score" min="1" max="10" class="form-control" required>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">İnceleme <span class="text-muted fw-normal">(opsiyonel)</span></label>
-                                <textarea name="review_text" rows="4" class="form-control" placeholder="Bu makale hakkında ne düşünüyorsunuz?"></textarea>
-                            </div>
                             <button type="submit" class="btn btn-brand w-100">Puanı Kaydet</button>
                         </form>
                     {% endif %}
@@ -94,31 +90,6 @@
                     </div>
                 {% endif %}
             </div>
-        </div>
-
-        <!-- İncelemeler Listesi -->
-        <div class="col-lg-8">
-            <p class="section-title mb-3"><i class="bi bi-chat-dots me-1"></i> İncelemeler ({{ ratings.count }})</p>
-
-            {% for rating in ratings %}
-            <div class="card-custom p-3 mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <a href="{% url 'users:user_profile' rating.user.username %}" style="color: #202122; font-weight: 600; text-decoration: none;">{{ rating.user.username }}</a>
-                    <span style="color: #3366cc; font-weight: 700;">
-                        {{ rating.score }}<span class="text-muted" style="font-size: 0.8rem; font-weight: 400;">/10</span>
-                    </span>
-                </div>
-                {% if rating.review_text %}
-                    <p class="mb-1 text-muted" style="font-size: 0.92rem;">{{ rating.review_text }}</p>
-                {% endif %}
-                <small class="text-muted">{{ rating.created_at|date:"d M Y" }}</small>
-            </div>
-            {% empty %}
-            <div class="text-center py-4 text-muted">
-                <i class="bi bi-chat-x display-4 d-block mb-3"></i>
-                Henüz inceleme yazılmamış. İlk incelemeyi siz yapın!
-            </div>
-            {% endfor %}
         </div>
 
     </div>
