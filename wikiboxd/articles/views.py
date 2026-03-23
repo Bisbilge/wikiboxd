@@ -44,8 +44,8 @@ def wiki_import(request, wiki_title):
         return redirect('articles:detail', pk=existing.pk)
 
     headers = {'User-Agent': 'Wikiboxd/1.0 (galatasaray-uni-project)'}
+
     try:
-        # Başlık için summary endpoint'i
         summary_resp = requests.get(
             f'https://tr.wikipedia.org/api/rest_v1/page/summary/{wiki_title}',
             headers=headers,
@@ -55,17 +55,28 @@ def wiki_import(request, wiki_title):
             messages.error(request, 'Makale Wikipedia\'da bulunamadı.')
             return redirect('articles:wiki_search')
 
-        # Tam makale HTML'i için html endpoint'i
-        html_resp = requests.get(
-            f'https://tr.wikipedia.org/api/rest_v1/page/html/{wiki_title}',
-            headers=headers,
-            timeout=10
-        )
-
         summary_data = summary_resp.json()
         title = summary_data['title']
         description = summary_data.get('extract', '')
-        content = html_resp.text if html_resp.status_code == 200 else description
+    except requests.RequestException:
+        messages.error(request, 'Wikipedia\'ya bağlanılamadı. Lütfen tekrar deneyin.')
+        return redirect('articles:wiki_search')
+
+    if request.method == 'POST':
+        category_id = request.POST.get('category') or None
+        category = None
+        if category_id:
+            category = Category.objects.filter(pk=category_id).first()
+
+        try:
+            html_resp = requests.get(
+                f'https://tr.wikipedia.org/api/rest_v1/page/html/{wiki_title}',
+                headers=headers,
+                timeout=10
+            )
+            content = html_resp.text if html_resp.status_code == 200 else description
+        except requests.RequestException:
+            content = description
 
         article = Article.objects.create(
             title=title,
@@ -73,13 +84,20 @@ def wiki_import(request, wiki_title):
             content=content,
             wiki_url=wiki_url,
             author=request.user,
+            category=category,
         )
         messages.success(request, f'"{article.title}" başarıyla eklendi!')
         return redirect('articles:detail', pk=article.pk)
 
-    except requests.RequestException:
-        messages.error(request, 'Wikipedia\'ya bağlanılamadı. Lütfen tekrar deneyin.')
-        return redirect('articles:wiki_search')
+    # GET: kategori seçim formunu göster
+    categories = Category.objects.filter(parent=None).prefetch_related('subcategories')
+    context = {
+        'wiki_title': wiki_title,
+        'title': title,
+        'description': description,
+        'categories': categories,
+    }
+    return render(request, 'articles/wiki_import_confirm.html', context)
 
 
 @xframe_options_exempt

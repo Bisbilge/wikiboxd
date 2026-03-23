@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Makale Ekle — {{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 680px;">
+
+    <h4 class="mb-1" style="font-family: 'Linux Libertine', Georgia, serif;">Makale Ekle</h4>
+    <p class="text-muted mb-4" style="font-size: .9rem;">Kategori seçip makaleyi Wikiboxd'a ekleyebilirsin.</p>
+
+    <!-- Makale önizleme -->
+    <div class="card-custom p-3 mb-4">
+        <h5 class="mb-1" style="font-family: 'Linux Libertine', Georgia, serif; color: #202122;">{{ title }}</h5>
+        <p class="text-muted mb-0" style="font-size: .88rem; line-height: 1.5;">{{ description|truncatechars:300 }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Kategori <span class="text-muted fw-normal">(isteğe bağlı)</span></label>
+            <select name="category" class="form-select">
+                <option value="">— Kategori seçme —</option>
+                {% for cat in categories %}
+                <optgroup label="{{ cat.name }}">
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% for sub in cat.subcategories.all %}
+                    <option value="{{ sub.id }}">&nbsp;&nbsp;&nbsp;↳ {{ sub.name }}</option>
+                    {% endfor %}
+                </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-brand px-4">Ekle</button>
+            <a href="{% url 'articles:wiki_search' %}" class="btn btn-outline-secondary">Geri Dön</a>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
