@@ -154,13 +154,20 @@ def home(request):
 
     followed_user_articles = None
     followed_category_articles = None
+    followed_user_comments = None
+    is_following_anyone = False
 
     if request.user.is_authenticated:
         followed_users = request.user.profile.following.all()
+        is_following_anyone = followed_users.exists()
         if followed_users:
             followed_user_articles = Article.objects.filter(
                 author__in=followed_users
             ).order_by('-created_at')[:10]
+
+            followed_user_comments = Comment.objects.filter(
+                user__in=followed_users
+            ).select_related('user', 'article').order_by('-created_at')[:20]
 
         followed_categories = request.user.followed_categories.all()
         if followed_categories:
@@ -181,6 +188,8 @@ def home(request):
         'total_comments': Comment.objects.count(),
         'followed_user_articles': followed_user_articles,
         'followed_category_articles': followed_category_articles,
+        'followed_user_comments': followed_user_comments,
+        'is_following_anyone': is_following_anyone,
     }
     return render(request, 'index.html', context)
 

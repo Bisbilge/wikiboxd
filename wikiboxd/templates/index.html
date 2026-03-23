@@ -65,7 +65,7 @@
         <!-- Sol: Makaleler Listesi -->
         <div class="col-lg-8">
 
-            {% if user.is_authenticated and followed_user_articles or user.is_authenticated and followed_category_articles %}
+            {% if user.is_authenticated and followed_user_articles or user.is_authenticated and followed_category_articles or user.is_authenticated and followed_user_comments %}
             <!-- Tablar -->
             <ul class="nav nav-tabs mb-4" style="border-bottom: 1px solid #a2a9b1;">
                 <li class="nav-item">
@@ -90,6 +90,12 @@
                     </a>
                 </li>
                 {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-comments" data-bs-toggle="tab" href="#panel-comments"
+                       style="font-size: .85rem; color: #54595d;">
+                        <i class="bi bi-chat-square-text me-1"></i>Yorumlar
+                    </a>
+                </li>
                 <li class="ms-auto nav-item d-flex align-items-center">
                     <a href="{% url 'articles:wiki_search' %}" class="btn btn-outline-wiki btn-sm">
                         <i class="bi bi-plus-lg me-1"></i>Makale Ekle
@@ -114,6 +120,39 @@
                     {% include 'partials/article_cards.html' with article_list=followed_category_articles empty_msg="Takip ettiğin kategorilerde henüz makale yok." %}
                 </div>
                 {% endif %}
+                <div class="tab-pane fade" id="panel-comments">
+                    {% if followed_user_comments %}
+                        {% for comment in followed_user_comments %}
+                        <div class="card-custom p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <a href="{% url 'users:user_profile' comment.user.username %}"
+                                   style="font-weight: 600; color: #3366cc; text-decoration: none; font-size: .9rem;">
+                                    {{ comment.user.username }}
+                                </a>
+                                <small class="text-muted">{{ comment.created_at|date:"d M Y" }}</small>
+                            </div>
+                            <p class="mb-2" style="font-size: .9rem; color: #202122;">{{ comment.text|truncatechars:200 }}</p>
+                            <small class="text-muted">
+                                <i class="bi bi-journal-text me-1"></i>
+                                <a href="{% url 'articles:detail' comment.article.id %}"
+                                   style="color: #54595d; text-decoration: none;">
+                                    {{ comment.article.title }}
+                                </a>
+                            </small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-chat-square-text display-3 text-muted mb-3 d-block"></i>
+                        {% if is_following_anyone %}
+                            <h5 class="text-muted">Takip ettiğin kullanıcılar henüz yorum yapmamış.</h5>
+                        {% else %}
+                            <h5 class="text-muted">Henüz kimseyi takip etmiyorsun.</h5>
+                            <a href="{% url 'users:user_search' %}" class="btn btn-outline-wiki mt-3">Kullanıcı Ara</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
 
             {% else %}
