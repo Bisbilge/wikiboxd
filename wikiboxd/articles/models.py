@@ -28,6 +28,13 @@ class Category(models.Model):
             return f"{self.parent.name} › {self.name}"
         return self.name
 
+    followers = models.ManyToManyField(
+        User,
+        related_name='followed_categories',
+        blank=True,
+        verbose_name='Takipçiler'
+    )
+
     def __str__(self):
         return self.get_full_name()
 

@@ -16,10 +16,24 @@
                 <li class="breadcrumb-item active">{{ category.name }}</li>
             </ol>
         </nav>
-        <h4 class="mb-0" style="font-family: 'Linux Libertine', Georgia, serif;">{{ category.get_full_name }}</h4>
-        {% if category.description %}
-        <p class="text-muted mt-1 mb-0" style="font-size: .9rem;">{{ category.description }}</p>
-        {% endif %}
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h4 class="mb-0" style="font-family: 'Linux Libertine', Georgia, serif;">{{ category.get_full_name }}</h4>
+                {% if category.description %}
+                <p class="text-muted mt-1 mb-0" style="font-size: .9rem;">{{ category.description }}</p>
+                {% endif %}
+            </div>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'articles:category_follow' category.slug %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm {% if is_following %}btn-brand{% else %}btn-outline-wiki{% endif %}">
+                    <i class="bi {% if is_following %}bi-bell-fill{% else %}bi-bell{% endif %} me-1"></i>
+                    {% if is_following %}Takip Ediliyor{% else %}Takip Et{% endif %}
+                    <span class="ms-1 opacity-75">({{ follower_count }})</span>
+                </button>
+            </form>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Alt kategoriler -->

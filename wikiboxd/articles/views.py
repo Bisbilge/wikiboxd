@@ -210,6 +210,43 @@ def article_list(request):
     return render(request, 'articles/article_list.html', context)
 
 
+def category_list(request):
+    q = request.GET.get('q', '').strip()
+    sort = request.GET.get('siralama', 'isim')
+
+    categories = Category.objects.filter(parent=None).prefetch_related('subcategories').annotate(
+        article_count=Count('articles'),
+        follower_count=Count('followers'),
+    )
+
+    if q:
+        categories = categories.filter(name__icontains=q)
+
+    sort_options = {
+        'isim': 'name',
+        'makale': '-article_count',
+        'takipci': '-follower_count',
+    }
+    categories = categories.order_by(sort_options.get(sort, 'name'))
+
+    context = {
+        'categories': categories,
+        'q': q,
+        'sort': sort,
+    }
+    return render(request, 'articles/category_list.html', context)
+
+
+@login_required
+def toggle_category_follow(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    if request.user in category.followers.all():
+        category.followers.remove(request.user)
+    else:
+        category.followers.add(request.user)
+    return redirect('articles:category_detail', slug=slug)
+
+
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     sub_ids = list(category.subcategories.values_list('id', flat=True))
@@ -219,10 +256,13 @@ def category_detail(request, slug):
         rating_count=Count('ratings'),
     ).order_by('-created_at')
     subcategories = category.subcategories.annotate(article_count=Count('articles'))
+    is_following = request.user.is_authenticated and request.user in category.followers.all()
     context = {
         'category': category,
         'articles': articles,
         'subcategories': subcategories,
+        'is_following': is_following,
+        'follower_count': category.followers.count(),
     }
     return render(request, 'articles/category_detail.html', context)
 

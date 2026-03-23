@@ -23,12 +23,21 @@
                     </li>
                     {% for cat in categories %}
                     <li class="mb-1">
-                        <a href="{% url 'articles:article_list' %}?kategori={{ cat.slug }}{% if q %}&q={{ q }}{% endif %}{% if sort %}&siralama={{ sort }}{% endif %}"
-                           class="text-decoration-none {% if selected_category.slug == cat.slug %}fw-semibold{% endif %}"
-                           style="color: #3366cc; font-size: .9rem;">
-                            {{ cat.name }}
-                            <span class="text-muted" style="font-size:.78rem;">({{ cat.article_count }})</span>
-                        </a>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <a href="{% url 'articles:article_list' %}?kategori={{ cat.slug }}{% if q %}&q={{ q }}{% endif %}{% if sort %}&siralama={{ sort }}{% endif %}"
+                               class="text-decoration-none {% if selected_category.slug == cat.slug %}fw-semibold{% endif %}"
+                               style="color: #3366cc; font-size: .9rem;">
+                                {{ cat.name }}
+                                <span class="text-muted" style="font-size:.78rem;">({{ cat.article_count }})</span>
+                            </a>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'articles:category_detail' cat.slug %}"
+                               title="Kategori sayfasına git"
+                               style="color: #a2a9b1; font-size: .8rem; text-decoration: none;">
+                                <i class="bi bi-arrow-right-circle"></i>
+                            </a>
+                            {% endif %}
+                        </div>
                         {% if cat.subcategories.all %}
                         <ul class="list-unstyled ms-3 mt-1">
                             {% for sub in cat.subcategories.all %}
