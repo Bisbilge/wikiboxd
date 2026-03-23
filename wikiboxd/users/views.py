@@ -1,6 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from .models import Profile
 
@@ -21,19 +22,61 @@ def register(request):
     
     return render(request, 'users/register.html', {'form': form})
 
-# Profil Görünümü
+# Profil Görünümü (kendi profili)
 @login_required
 def profile(request):
     user_articles = request.user.articles.all()
     user_ratings = request.user.ratings.all()
     followed_categories = request.user.followed_categories.all()
+    following = request.user.profile.following.all()
+    followers = request.user.followers.all()
 
     context = {
         'user_articles': user_articles,
         'user_ratings': user_ratings,
         'followed_categories': followed_categories,
+        'following': following,
+        'followers': followers,
     }
     return render(request, 'users/profile.html', context)
+
+
+# Herkese açık kullanıcı profili
+def user_profile(request, username):
+    viewed_user = get_object_or_404(User, username=username)
+    if request.user == viewed_user:
+        return redirect('users:profile')
+
+    Profile.objects.get_or_create(user=viewed_user)
+
+    is_following = (
+        request.user.is_authenticated and
+        viewed_user in request.user.profile.following.all()
+    )
+    context = {
+        'viewed_user': viewed_user,
+        'user_articles': viewed_user.articles.all(),
+        'user_ratings': viewed_user.ratings.all(),
+        'following': viewed_user.profile.following.all(),
+        'followers': viewed_user.followers.all(),
+        'is_following': is_following,
+    }
+    return render(request, 'users/user_profile.html', context)
+
+
+# Takip et / bırak
+@login_required
+def toggle_follow(request, username):
+    target = get_object_or_404(User, username=username)
+    if target == request.user:
+        return redirect('users:user_profile', username=username)
+
+    profile = request.user.profile
+    if target in profile.following.all():
+        profile.following.remove(target)
+    else:
+        profile.following.add(target)
+    return redirect('users:user_profile', username=username)
 
 # Profil Düzenleme Görünümü
 @login_required
