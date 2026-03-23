@@ -26,10 +26,12 @@ def register(request):
 def profile(request):
     user_articles = request.user.articles.all()
     user_ratings = request.user.ratings.all()
-    
+    followed_categories = request.user.followed_categories.all()
+
     context = {
         'user_articles': user_articles,
-        'user_ratings': user_ratings
+        'user_ratings': user_ratings,
+        'followed_categories': followed_categories,
     }
     return render(request, 'users/profile.html', context)
 

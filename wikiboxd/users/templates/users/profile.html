@@ -23,12 +23,31 @@
             </div>
         </div>
 
-        <!-- Sağ: Puanlamalar -->
+        <!-- Sağ: İçerik -->
         <div class="col-md-9">
+
+            <!-- Takip Edilen Kategoriler -->
+            <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
+                <h5 class="section-title mb-0">Takip Ettiğim Kategoriler</h5>
+            </div>
+            {% if followed_categories %}
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                {% for cat in followed_categories %}
+                <a href="{% url 'articles:category_detail' cat.slug %}"
+                   class="badge text-decoration-none py-2 px-3"
+                   style="background-color: #eaf3fb; color: #3366cc; font-size: .85rem;">
+                    <i class="bi bi-bell-fill me-1" style="font-size: .75rem;"></i>{{ cat.get_full_name }}
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+                <p class="text-muted mb-4">Henüz hiçbir kategori takip etmiyorsun.</p>
+            {% endif %}
+
+            <!-- Puanlamalar -->
             <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
                 <h5 class="section-title mb-0">Son Puanlamalarım</h5>
             </div>
-
             {% if user_ratings %}
                 {% for rating in user_ratings %}
                 <div class="card-custom p-3 mb-2">
