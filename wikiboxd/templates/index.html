@@ -65,6 +65,59 @@
         <!-- Sol: Makaleler Listesi -->
         <div class="col-lg-8">
 
+            {% if user.is_authenticated and (followed_user_articles or followed_category_articles) %}
+            <!-- Tablar -->
+            <ul class="nav nav-tabs mb-4" style="border-bottom: 1px solid #a2a9b1;">
+                <li class="nav-item">
+                    <a class="nav-link active" id="tab-all" data-bs-toggle="tab" href="#panel-all"
+                       style="font-size: .85rem; color: #54595d;">
+                        <i class="bi bi-clock me-1"></i>Son Eklenenler
+                    </a>
+                </li>
+                {% if followed_user_articles %}
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-users" data-bs-toggle="tab" href="#panel-users"
+                       style="font-size: .85rem; color: #54595d;">
+                        <i class="bi bi-people me-1"></i>Takip Ettiklerim
+                    </a>
+                </li>
+                {% endif %}
+                {% if followed_category_articles %}
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-cats" data-bs-toggle="tab" href="#panel-cats"
+                       style="font-size: .85rem; color: #54595d;">
+                        <i class="bi bi-tags me-1"></i>Kategorilerim
+                    </a>
+                </li>
+                {% endif %}
+                <li class="ms-auto nav-item d-flex align-items-center">
+                    <a href="{% url 'articles:wiki_search' %}" class="btn btn-outline-wiki btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i>Makale Ekle
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Tüm makaleler -->
+                <div class="tab-pane fade show active" id="panel-all">
+                    {% include 'partials/article_cards.html' with article_list=articles %}
+                </div>
+                <!-- Takip edilen kullanıcıların makaleleri -->
+                {% if followed_user_articles %}
+                <div class="tab-pane fade" id="panel-users">
+                    {% include 'partials/article_cards.html' with article_list=followed_user_articles empty_msg="Takip ettiğin kullanıcılar henüz makale eklememiş." %}
+                </div>
+                {% endif %}
+                <!-- Takip edilen kategorilerin makaleleri -->
+                {% if followed_category_articles %}
+                <div class="tab-pane fade" id="panel-cats">
+                    {% include 'partials/article_cards.html' with article_list=followed_category_articles empty_msg="Takip ettiğin kategorilerde henüz makale yok." %}
+                </div>
+                {% endif %}
+            </div>
+
+            {% else %}
+            <!-- Giriş yapmamış veya hiç takip yok: klasik liste -->
             <div class="d-flex justify-content-between align-items-center pb-2 mb-4" style="border-bottom: 1px solid #a2a9b1;">
                 <h5 class="section-title mb-0">Son Eklenen Makaleler</h5>
                 {% if user.is_authenticated %}
@@ -73,44 +126,8 @@
                 </a>
                 {% endif %}
             </div>
-
-            {% for article in articles %}
-            <div class="card-custom p-3 mb-3">
-                <div class="d-flex justify-content-between align-items-start gap-3">
-                    <div class="flex-grow-1">
-                        <a href="{% url 'articles:detail' article.id %}" style="font-size: 1.05rem; font-weight: 600; font-family: 'Linux Libertine', Georgia, serif; color: #3366cc; text-decoration: none;">
-                            {{ article.title }}
-                        </a>
-                        <p class="text-muted mb-1 mt-1" style="font-size: 0.87rem; line-height: 1.5;">
-                            {{ article.description|default:article.content|striptags|truncatechars:160 }}
-                        </p>
-                        <small class="text-muted">
-                            <i class="bi bi-person me-1"></i>{{ article.author.username|default:"Anonim" }}
-                            &nbsp;·&nbsp;
-                            <i class="bi bi-calendar3 me-1"></i>{{ article.created_at|date:"d M Y" }}
-                            &nbsp;·&nbsp;
-                            <i class="bi bi-star me-1"></i>{{ article.ratings.count }} puan
-                            &nbsp;·&nbsp;
-                            <i class="bi bi-chat me-1"></i>{{ article.comments.count }} yorum
-                        </small>
-                    </div>
-                    <a href="{% url 'articles:detail' article.id %}" class="btn btn-outline-wiki btn-sm text-nowrap">
-                        Oku →
-                    </a>
-                </div>
-            </div>
-            {% empty %}
-            <div class="text-center py-5">
-                <i class="bi bi-journal-x display-3 text-muted mb-3 d-block"></i>
-                <h5 class="text-muted">Henüz hiç makale eklenmemiş</h5>
-                <p class="text-muted mb-4">Wikipedia'dan bir makale arayarak başlayabilirsin.</p>
-                {% if user.is_authenticated %}
-                <a href="{% url 'articles:wiki_search' %}" class="btn btn-brand">Makale Ara</a>
-                {% else %}
-                <a href="{% url 'users:register' %}" class="btn btn-brand">Hesap Oluştur</a>
-                {% endif %}
-            </div>
-            {% endfor %}
+            {% include 'partials/article_cards.html' with article_list=articles %}
+            {% endif %}
 
         </div>
 

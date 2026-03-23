@@ -148,10 +148,29 @@ def home(request):
 
     articles_list = Article.objects.all().order_by('-created_at')
 
-    # En çok puanlanan makaleler
     top_articles = Article.objects.annotate(
         rating_count=Count('ratings')
     ).filter(rating_count__gt=0).order_by('-rating_count')[:5]
+
+    followed_user_articles = None
+    followed_category_articles = None
+
+    if request.user.is_authenticated:
+        followed_users = request.user.profile.following.all()
+        if followed_users:
+            followed_user_articles = Article.objects.filter(
+                author__in=followed_users
+            ).order_by('-created_at')[:10]
+
+        followed_categories = request.user.followed_categories.all()
+        if followed_categories:
+            sub_ids = Category.objects.filter(
+                parent__in=followed_categories
+            ).values_list('id', flat=True)
+            cat_ids = list(followed_categories.values_list('id', flat=True)) + list(sub_ids)
+            followed_category_articles = Article.objects.filter(
+                category_id__in=cat_ids
+            ).order_by('-created_at')[:10]
 
     context = {
         'articles': articles_list,
@@ -160,6 +179,8 @@ def home(request):
         'total_ratings': Rating.objects.count(),
         'total_users': User.objects.count(),
         'total_comments': Comment.objects.count(),
+        'followed_user_articles': followed_user_articles,
+        'followed_category_articles': followed_category_articles,
     }
     return render(request, 'index.html', context)
 
