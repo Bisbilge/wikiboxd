@@ -14,7 +14,7 @@
                 {% endif %}
                 <h1 class="fw-bold mb-1" style="font-family: 'Linux Libertine', Georgia, serif; font-size: 1.8rem; color: #202122;">{{ article.title }}</h1>
                 <small class="text-muted">
-                    Yazar: {{ article.author.username|default:"Anonim" }} &nbsp;·&nbsp;
+                    Yazar: <a href="{% url 'users:user_profile' article.author.username %}" style="color: #3366cc;">{{ article.author.username|default:"Anonim" }}</a> &nbsp;·&nbsp;
                     {{ article.created_at|date:"d M Y" }}
                 </small>
             </div>

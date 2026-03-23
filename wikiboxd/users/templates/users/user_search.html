@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Kullanıcı Ara — Wikiboxd{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 700px;">
+
+    <h4 class="mb-1" style="font-family: 'Linux Libertine', Georgia, serif;">Kullanıcı Ara</h4>
+    <p class="text-muted mb-4" style="font-size: .9rem;">Kullanıcı adına göre ara.</p>
+
+    <form method="get" class="d-flex gap-2 mb-4">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text bg-white"><i class="bi bi-person-search"></i></span>
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Kullanıcı adı..." autofocus>
+        </div>
+        <button type="submit" class="btn btn-brand px-4">Ara</button>
+    </form>
+
+    {% if q %}
+        {% if results %}
+        <p class="text-muted mb-3" style="font-size: .88rem;">
+            "<em>{{ q }}</em>" için <strong>{{ results|length }}</strong> kullanıcı bulundu.
+        </p>
+        {% for u in results %}
+        <div class="card-custom p-3 mb-2">
+            <div class="d-flex justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-person-circle fs-2 text-muted"></i>
+                    <div>
+                        <a href="{% url 'users:user_profile' u.username %}"
+                           style="font-weight: 600; color: #3366cc; font-size: .95rem; text-decoration: none;">
+                            {{ u.username }}
+                        </a>
+                        <small class="text-muted d-block" style="font-size: .8rem;">
+                            <i class="bi bi-journal-text me-1"></i>{{ u.articles.count }} makale
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-star me-1"></i>{{ u.ratings.count }} puan
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-people me-1"></i>{{ u.followers.count }} takipçi
+                        </small>
+                    </div>
+                </div>
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'users:toggle_follow' u.username %}">
+                    {% csrf_token %}
+                    {% if u in user.profile.following.all %}
+                    <button type="submit" class="btn btn-brand btn-sm">
+                        <i class="bi bi-person-check-fill me-1"></i>Takip Ediliyor
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn btn-outline-wiki btn-sm">
+                        <i class="bi bi-person-plus me-1"></i>Takip Et
+                    </button>
+                    {% endif %}
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-person-x display-3 text-muted mb-3 d-block"></i>
+            <h5 class="text-muted">"{{ q }}" ile eşleşen kullanıcı bulunamadı.</h5>
+        </div>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -64,6 +64,18 @@ def user_profile(request, username):
     return render(request, 'users/user_profile.html', context)
 
 
+# Kullanıcı arama
+def user_search(request):
+    q = request.GET.get('q', '').strip()
+    results = []
+    if q:
+        results = User.objects.filter(username__icontains=q).exclude(
+            pk=request.user.pk if request.user.is_authenticated else None
+        ).select_related('profile')
+
+    return render(request, 'users/user_search.html', {'results': results, 'q': q})
+
+
 # Takip et / bırak
 @login_required
 def toggle_follow(request, username):
