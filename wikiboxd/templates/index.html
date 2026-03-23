@@ -65,7 +65,7 @@
         <!-- Sol: Makaleler Listesi -->
         <div class="col-lg-8">
 
-            {% if user.is_authenticated and (followed_user_articles or followed_category_articles) %}
+            {% if user.is_authenticated and followed_user_articles or user.is_authenticated and followed_category_articles %}
             <!-- Tablar -->
             <ul class="nav nav-tabs mb-4" style="border-bottom: 1px solid #a2a9b1;">
                 <li class="nav-item">
