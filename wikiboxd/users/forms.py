@@ -25,4 +25,6 @@ class UserUpdateForm(forms.ModelForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['bio']
+        fields = ['bio', 'is_private']
+        labels = {'is_private': 'Profilimi gizli yap'}
+        help_texts = {'is_private': 'Açık olursa sadece takipçilerin profilini görebilir.'}
