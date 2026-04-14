@@ -11,6 +11,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('ara/', views.user_search, name='user_search'),
+    path('bildirimler/', views.notifications_list, name='notifications'),
     path('password-reset/', auth_views.PasswordResetView.as_view(
         template_name='users/password_reset.html',
         email_template_name='users/password_reset_email.html',
@@ -29,4 +30,6 @@ urlpatterns = [
     # Dinamik pattern'ler en sona
     path('<str:username>/', views.user_profile, name='user_profile'),
     path('<str:username>/takip/', views.toggle_follow, name='toggle_follow'),
+    path('<str:username>/takip-edilenler/', views.following_list, name='following_list'),
+    path('<str:username>/takipciler/', views.followers_list, name='followers_list'),
 ]

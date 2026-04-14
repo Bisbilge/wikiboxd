@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
-from .models import Profile
+from .models import Profile, Notification
 
 # Kayıt Olma Görünümü
 def register(request):
@@ -30,6 +30,7 @@ def profile(request):
     followed_categories = request.user.followed_categories.all()
     following = request.user.profile.following.all()
     followers = request.user.followers.all()
+    favorite_articles = request.user.profile.favorite_articles.all()
 
     context = {
         'user_articles': user_articles,
@@ -37,6 +38,7 @@ def profile(request):
         'followed_categories': followed_categories,
         'following': following,
         'followers': followers,
+        'favorite_articles': favorite_articles,
     }
     return render(request, 'users/profile.html', context)
 
@@ -47,12 +49,19 @@ def user_profile(request, username):
     if request.user == viewed_user:
         return redirect('users:profile')
 
-    Profile.objects.get_or_create(user=viewed_user)
+    profile, _ = Profile.objects.get_or_create(user=viewed_user)
 
     is_following = (
         request.user.is_authenticated and
         viewed_user in request.user.profile.following.all()
     )
+
+    if profile.is_private and not is_following:
+        return render(request, 'users/private_profile.html', {
+            'viewed_user': viewed_user,
+            'is_following': is_following,
+        })
+
     context = {
         'viewed_user': viewed_user,
         'user_articles': viewed_user.articles.all(),
@@ -62,6 +71,44 @@ def user_profile(request, username):
         'is_following': is_following,
     }
     return render(request, 'users/user_profile.html', context)
+
+
+# Takip edilenler listesi
+def following_list(request, username):
+    viewed_user = get_object_or_404(User, username=username)
+    profile, _ = Profile.objects.get_or_create(user=viewed_user)
+
+    if profile.is_private and not (
+        request.user.is_authenticated and viewed_user in request.user.profile.following.all()
+    ) and request.user != viewed_user:
+        return redirect('users:user_profile', username=username)
+
+    following = profile.following.all()
+    context = {'viewed_user': viewed_user, 'user_list': following, 'list_type': 'following'}
+    return render(request, 'users/follow_list.html', context)
+
+
+# Takipçiler listesi
+def followers_list(request, username):
+    viewed_user = get_object_or_404(User, username=username)
+    profile, _ = Profile.objects.get_or_create(user=viewed_user)
+
+    if profile.is_private and not (
+        request.user.is_authenticated and viewed_user in request.user.profile.following.all()
+    ) and request.user != viewed_user:
+        return redirect('users:user_profile', username=username)
+
+    followers = viewed_user.followers.all()
+    context = {'viewed_user': viewed_user, 'user_list': followers, 'list_type': 'followers'}
+    return render(request, 'users/follow_list.html', context)
+
+
+# Bildirimler
+@login_required
+def notifications_list(request):
+    notifications = request.user.notifications.select_related('article').all()
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return render(request, 'users/notifications.html', {'notifications': notifications})
 
 
 # Kullanıcı arama
