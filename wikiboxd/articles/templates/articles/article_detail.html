@@ -29,6 +29,15 @@
                         <div class="text-muted" style="font-size: 0.9rem;">Henüz puanlanmadı</div>
                     {% endif %}
                 </div>
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'articles:toggle_favorite' article.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if is_favorited %}btn-brand{% else %}btn-outline-wiki{% endif %}">
+                        <i class="bi {% if is_favorited %}bi-bookmark-heart-fill{% else %}bi-bookmark-heart{% endif %} me-1"></i>
+                        {% if is_favorited %}Favorilendi{% else %}Favorile{% endif %}
+                    </button>
+                </form>
+                {% endif %}
                 {% if article.wiki_url %}
                 <a href="{{ article.wiki_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-wiki btn-sm">
                     <i class="bi bi-box-arrow-up-right me-1"></i> Wikipedia'da Aç

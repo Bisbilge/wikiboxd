@@ -297,14 +297,27 @@ def category_detail(request, slug):
     return render(request, 'articles/category_detail.html', context)
 
 
+@login_required
+def toggle_favorite(request, pk):
+    article = get_object_or_404(Article, pk=pk)
+    profile = request.user.profile
+    if article in profile.favorite_articles.all():
+        profile.favorite_articles.remove(article)
+    else:
+        profile.favorite_articles.add(article)
+    return redirect('articles:detail', pk=pk)
+
+
 def detail(request, pk):
     article = get_object_or_404(Article, pk=pk)
     ratings = article.ratings.select_related('user').order_by('-created_at')
     avg_score = ratings.aggregate(avg=Avg('score'))['avg']
 
     user_rating = None
+    is_favorited = False
     if request.user.is_authenticated:
         user_rating = ratings.filter(user=request.user).first()
+        is_favorited = article in request.user.profile.favorite_articles.all()
 
     comments = article.comments.select_related('user').order_by('-created_at')
 
@@ -313,6 +326,7 @@ def detail(request, pk):
         'ratings': ratings,
         'avg_score': avg_score,
         'user_rating': user_rating,
+        'is_favorited': is_favorited,
         'comments': comments,
         'comment_form': CommentForm(),
     }

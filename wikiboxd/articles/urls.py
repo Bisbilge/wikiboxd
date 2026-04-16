@@ -13,4 +13,5 @@ urlpatterns = [
     path('ara/ekle/<path:wiki_title>/', views.wiki_import, name='wiki_import'),
     path('<int:pk>/', views.detail, name='detail'),
     path('<int:pk>/embed/', views.wiki_embed_proxy, name='wiki_embed'),
+    path('<int:pk>/favori/', views.toggle_favorite, name='toggle_favorite'),
 ]
