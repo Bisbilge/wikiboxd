@@ -17,12 +17,16 @@
                 <p class="text-muted mb-2" style="font-size: 0.8rem;">Katılım: {{ user.date_joined|date:"M Y" }}</p>
                 <div class="d-flex justify-content-center gap-3 mb-3" style="font-size: .85rem;">
                     <div>
-                        <span class="fw-semibold">{{ following.count }}</span>
-                        <span class="text-muted"> takip</span>
+                        <a href="{% url 'users:following_list' user.username %}" class="text-decoration-none text-reset">
+                            <span class="fw-semibold">{{ following.count }}</span>
+                            <span class="text-muted"> takip</span>
+                        </a>
                     </div>
                     <div>
-                        <span class="fw-semibold">{{ followers.count }}</span>
-                        <span class="text-muted"> takipçi</span>
+                        <a href="{% url 'users:followers_list' user.username %}" class="text-decoration-none text-reset">
+                            <span class="fw-semibold">{{ followers.count }}</span>
+                            <span class="text-muted"> takipçi</span>
+                        </a>
                     </div>
                 </div>
                 <a href="{% url 'users:edit_profile' %}" class="btn btn-outline-wiki btn-sm w-100 mb-2">Profili Düzenle</a>
@@ -52,6 +56,25 @@
             </div>
             {% else %}
                 <p class="text-muted mb-4">Henüz hiçbir kategori takip etmiyorsun.</p>
+            {% endif %}
+
+            <!-- Favori Makaleler -->
+            <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
+                <h5 class="section-title mb-0">Favori Makalelerim</h5>
+            </div>
+            {% if favorite_articles %}
+            <div class="mb-4">
+                {% for article in favorite_articles %}
+                <div class="card-custom p-3 mb-2 d-flex justify-content-between align-items-center">
+                    <a href="{% url 'articles:detail' article.pk %}" style="font-weight: 600; color: #3366cc; font-size: 0.95rem;">
+                        {{ article.title }}
+                    </a>
+                    <i class="bi bi-bookmark-heart-fill" style="color: #e05c5c;"></i>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+                <p class="text-muted mb-4">Henüz favori makale eklemedin.</p>
             {% endif %}
 
             <!-- Puanlamalar -->
