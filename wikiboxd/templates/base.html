@@ -255,6 +255,16 @@
                             <a class="nav-link" href="{% url 'users:user_search' %}">Kullanıcılar</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'users:notifications' %}" title="Bildirimler">
+                                <i class="bi bi-bell"></i>
+                                {% if unread_notification_count %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: .6rem;">
+                                        {{ unread_notification_count }}
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{% url 'users:profile' %}" style="color: var(--brand) !important; font-weight: 600;">
                                 <i class="bi bi-person-circle me-1"></i>{{ user.username }}
                             </a>
