@@ -18,12 +18,16 @@
 
                 <div class="d-flex justify-content-center gap-3 mb-3" style="font-size: .85rem;">
                     <div>
-                        <span class="fw-semibold">{{ following.count }}</span>
-                        <span class="text-muted"> takip</span>
+                        <a href="{% url 'users:following_list' viewed_user.username %}" class="text-decoration-none text-reset">
+                            <span class="fw-semibold">{{ following.count }}</span>
+                            <span class="text-muted"> takip</span>
+                        </a>
                     </div>
                     <div>
-                        <span class="fw-semibold">{{ followers.count }}</span>
-                        <span class="text-muted"> takipçi</span>
+                        <a href="{% url 'users:followers_list' viewed_user.username %}" class="text-decoration-none text-reset">
+                            <span class="fw-semibold">{{ followers.count }}</span>
+                            <span class="text-muted"> takipçi</span>
+                        </a>
                     </div>
                 </div>
 

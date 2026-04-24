@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if list_type == 'following' %}{{ viewed_user.username }} Takip Ettikleri{% else %}{{ viewed_user.username }} Takipçileri{% endif %} — Wikiboxd
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+
+    <div class="mb-3">
+        <a href="{% url 'users:user_profile' viewed_user.username %}" class="text-muted" style="font-size: 0.9rem; text-decoration: none;">
+            <i class="bi bi-arrow-left me-1"></i> {{ viewed_user.username }} profiline dön
+        </a>
+    </div>
+
+    <div class="pb-2 mb-4" style="border-bottom: 1px solid #a2a9b1;">
+        <h5 class="section-title mb-0">
+            {% if list_type == 'following' %}
+                <i class="bi bi-person-check me-1"></i>{{ viewed_user.username }} — Takip Ettikleri ({{ user_list.count }})
+            {% else %}
+                <i class="bi bi-people me-1"></i>{{ viewed_user.username }} — Takipçileri ({{ user_list.count }})
+            {% endif %}
+        </h5>
+    </div>
+
+    {% for u in user_list %}
+    <div class="card-custom p-3 mb-2 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-person-circle fs-3 text-muted"></i>
+            <div>
+                <a href="{% url 'users:user_profile' u.username %}" style="font-weight: 600; color: #3366cc; text-decoration: none;">
+                    {{ u.username }}
+                </a>
+                {% if u.first_name %}
+                    <small class="text-muted d-block">{{ u.first_name }} {{ u.last_name }}</small>
+                {% endif %}
+            </div>
+        </div>
+        {% if user.is_authenticated and user != u %}
+        <form method="post" action="{% url 'users:toggle_follow' u.username %}">
+            {% csrf_token %}
+            {% if u in user.profile.following.all %}
+            <button type="submit" class="btn btn-brand btn-sm">
+                <i class="bi bi-person-check-fill me-1"></i>Takip Ediliyor
+            </button>
+            {% else %}
+            <button type="submit" class="btn btn-outline-wiki btn-sm">
+                <i class="bi bi-person-plus me-1"></i>Takip Et
+            </button>
+            {% endif %}
+        </form>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-people display-4 d-block mb-3"></i>
+        {% if list_type == 'following' %}Henüz kimseyi takip etmiyor.{% else %}Henüz takipçi yok.{% endif %}
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}
