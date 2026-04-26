@@ -9,17 +9,34 @@ def notify_category_followers(sender, instance, created, **kwargs):
         return
 
     from users.models import Notification
+    from django.contrib.auth.models import User
 
-    category = instance.category
-    followers = category.followers.exclude(pk=instance.author_id) if instance.author_id else category.followers.all()
+    # Makale kategorisi + tüm üst kategorileri topla
+    cats = []
+    cat = instance.category
+    while cat:
+        cats.append(cat)
+        cat = cat.parent
 
+    # Tüm kategorilerin takipçilerini birleştir (tekrarsız)
+    follower_ids = set()
+    for c in cats:
+        follower_ids.update(c.followers.values_list('id', flat=True))
+
+    # Yazarı çıkar
+    if instance.author_id:
+        follower_ids.discard(instance.author_id)
+
+    if not follower_ids:
+        return
+
+    category_name = instance.category.get_full_name()
     notifications = [
         Notification(
             user=follower,
-            message=f'"{category.name}" kategorisine yeni makale eklendi: {instance.title}',
+            message=f'"{category_name}" kategorisine yeni makale eklendi: {instance.title}',
             article=instance,
         )
-        for follower in followers
+        for follower in User.objects.filter(pk__in=follower_ids)
     ]
-    if notifications:
-        Notification.objects.bulk_create(notifications)
+    Notification.objects.bulk_create(notifications)
