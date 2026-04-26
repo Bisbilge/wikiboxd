@@ -38,10 +38,19 @@
                 {% if user.is_authenticated %}
                 <form method="post" action="{% url 'users:toggle_follow' viewed_user.username %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm w-100 {% if is_following %}btn-brand{% else %}btn-outline-wiki{% endif %}">
-                        <i class="bi {% if is_following %}bi-person-check-fill{% else %}bi-person-plus{% endif %} me-1"></i>
-                        {% if is_following %}Takip Ediliyor{% else %}Takip Et{% endif %}
+                    {% if is_following %}
+                    <button type="submit" class="btn btn-sm w-100 btn-brand">
+                        <i class="bi bi-person-check-fill me-1"></i>Takip Ediliyor
                     </button>
+                    {% elif has_pending_request %}
+                    <button type="submit" class="btn btn-sm w-100 btn-outline-wiki">
+                        <i class="bi bi-hourglass-split me-1"></i>İstek Gönderildi
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn btn-sm w-100 btn-outline-wiki">
+                        <i class="bi bi-person-plus me-1"></i>Takip Et
+                    </button>
+                    {% endif %}
                 </form>
                 {% endif %}
             </div>

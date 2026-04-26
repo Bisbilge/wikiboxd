@@ -43,6 +43,10 @@
             <button type="submit" class="btn btn-brand btn-sm">
                 <i class="bi bi-person-check-fill me-1"></i>Takip Ediliyor
             </button>
+            {% elif u.pk in pending_request_ids %}
+            <button type="submit" class="btn btn-outline-wiki btn-sm">
+                <i class="bi bi-hourglass-split me-1"></i>İstek Gönderildi
+            </button>
             {% else %}
             <button type="submit" class="btn btn-outline-wiki btn-sm">
                 <i class="bi bi-person-plus me-1"></i>Takip Et

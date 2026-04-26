@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
-from .models import Profile, Notification
+from .models import Profile, Notification, FollowRequest
 
 # Kayıt Olma Görünümü
 def register(request):
@@ -31,6 +31,7 @@ def profile(request):
     following = request.user.profile.following.all()
     followers = request.user.followers.all()
     favorite_articles = request.user.profile.favorite_articles.all()
+    incoming_requests = request.user.received_follow_requests.select_related('from_user').all()
 
     context = {
         'user_articles': user_articles,
@@ -39,6 +40,7 @@ def profile(request):
         'following': following,
         'followers': followers,
         'favorite_articles': favorite_articles,
+        'incoming_requests': incoming_requests,
     }
     return render(request, 'users/profile.html', context)
 
@@ -56,10 +58,16 @@ def user_profile(request, username):
         viewed_user in request.user.profile.following.all()
     )
 
+    has_pending_request = (
+        request.user.is_authenticated and
+        FollowRequest.objects.filter(from_user=request.user, to_user=viewed_user).exists()
+    )
+
     if profile.is_private and not is_following:
         return render(request, 'users/private_profile.html', {
             'viewed_user': viewed_user,
             'is_following': is_following,
+            'has_pending_request': has_pending_request,
         })
 
     context = {
@@ -69,6 +77,7 @@ def user_profile(request, username):
         'following': viewed_user.profile.following.all(),
         'followers': viewed_user.followers.all(),
         'is_following': is_following,
+        'has_pending_request': has_pending_request,
     }
     return render(request, 'users/user_profile.html', context)
 
@@ -84,7 +93,15 @@ def following_list(request, username):
         return redirect('users:user_profile', username=username)
 
     following = profile.following.all()
-    context = {'viewed_user': viewed_user, 'user_list': following, 'list_type': 'following'}
+    pending_ids = set(
+        FollowRequest.objects.filter(from_user=request.user).values_list('to_user_id', flat=True)
+    ) if request.user.is_authenticated else set()
+    context = {
+        'viewed_user': viewed_user,
+        'user_list': following,
+        'list_type': 'following',
+        'pending_request_ids': pending_ids,
+    }
     return render(request, 'users/follow_list.html', context)
 
 
@@ -99,7 +116,15 @@ def followers_list(request, username):
         return redirect('users:user_profile', username=username)
 
     followers = viewed_user.followers.all()
-    context = {'viewed_user': viewed_user, 'user_list': followers, 'list_type': 'followers'}
+    pending_ids = set(
+        FollowRequest.objects.filter(from_user=request.user).values_list('to_user_id', flat=True)
+    ) if request.user.is_authenticated else set()
+    context = {
+        'viewed_user': viewed_user,
+        'user_list': followers,
+        'list_type': 'followers',
+        'pending_request_ids': pending_ids,
+    }
     return render(request, 'users/follow_list.html', context)
 
 
@@ -123,7 +148,7 @@ def user_search(request):
     return render(request, 'users/user_search.html', {'results': results, 'q': q})
 
 
-# Takip et / bırak
+# Takip isteği gönder / iptal et / takipten çık
 @login_required
 def toggle_follow(request, username):
     target = get_object_or_404(User, username=username)
@@ -131,11 +156,35 @@ def toggle_follow(request, username):
         return redirect('users:user_profile', username=username)
 
     profile = request.user.profile
+
     if target in profile.following.all():
+        # Zaten takip ediyorsa → takipten çık
         profile.following.remove(target)
     else:
-        profile.following.add(target)
+        existing_request = FollowRequest.objects.filter(from_user=request.user, to_user=target).first()
+        if existing_request:
+            # Bekleyen istek varsa → iptal et
+            existing_request.delete()
+        else:
+            # İstek yok → yeni istek gönder
+            FollowRequest.objects.get_or_create(from_user=request.user, to_user=target)
+
     return redirect('users:user_profile', username=username)
+
+
+# Takip isteğini kabul et veya reddet
+@login_required
+def handle_follow_request(request, request_id, action):
+    follow_request = get_object_or_404(FollowRequest, pk=request_id, to_user=request.user)
+
+    if action == 'kabul':
+        follow_request.from_user.profile.following.add(request.user)
+        follow_request.delete()
+        messages.success(request, f'{follow_request.from_user.username} artık seni takip ediyor.')
+    elif action == 'reddet':
+        follow_request.delete()
+
+    return redirect('users:profile')
 
 # Profil Düzenleme Görünümü
 @login_required

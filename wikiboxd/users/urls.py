@@ -12,6 +12,7 @@ urlpatterns = [
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('ara/', views.user_search, name='user_search'),
     path('bildirimler/', views.notifications_list, name='notifications'),
+    path('takip-istegi/<int:request_id>/<str:action>/', views.handle_follow_request, name='handle_follow_request'),
     path('password-reset/', auth_views.PasswordResetView.as_view(
         template_name='users/password_reset.html',
         email_template_name='users/password_reset_email.html',

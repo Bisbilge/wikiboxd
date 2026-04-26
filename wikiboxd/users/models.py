@@ -25,6 +25,18 @@ class Profile(models.Model):
         return f"{self.user.username} Profili"
 
 
+class FollowRequest(models.Model):
+    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_follow_requests')
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_follow_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+
+    def __str__(self):
+        return f"{self.from_user.username} → {self.to_user.username}"
+
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     message = models.CharField(max_length=300)

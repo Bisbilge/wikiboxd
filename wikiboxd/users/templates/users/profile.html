@@ -40,6 +40,35 @@
         <!-- Sağ: İçerik -->
         <div class="col-md-9">
 
+            <!-- Gelen Takip İstekleri -->
+            {% if incoming_requests %}
+            <div class="card-custom p-3 mb-4" style="border-left: 4px solid #3366cc;">
+                <div class="pb-2 mb-3" style="border-bottom: 1px solid #eaecf0;">
+                    <h5 class="section-title mb-0">
+                        <i class="bi bi-person-plus me-1"></i>Takip İstekleri
+                        <span class="badge rounded-pill ms-1" style="background:#3366cc; font-size:.7rem;">{{ incoming_requests.count }}</span>
+                    </h5>
+                </div>
+                {% for req in incoming_requests %}
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <a href="{% url 'users:user_profile' req.from_user.username %}" style="font-weight:600; color:#3366cc; text-decoration:none;">
+                        <i class="bi bi-person-circle me-1 text-muted"></i>{{ req.from_user.username }}
+                    </a>
+                    <div class="d-flex gap-2">
+                        <form method="post" action="{% url 'users:handle_follow_request' req.pk 'kabul' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-brand btn-sm">Kabul Et</button>
+                        </form>
+                        <form method="post" action="{% url 'users:handle_follow_request' req.pk 'reddet' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-wiki btn-sm" style="border-color:#fca5a5; color:#b91c1c;">Reddet</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             <!-- Takip Edilen Kategoriler -->
             <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
                 <h5 class="section-title mb-0">Takip Ettiğim Kategoriler</h5>
