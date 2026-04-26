@@ -29,7 +29,7 @@ def profile(request):
     user_ratings = request.user.ratings.all()
     followed_categories = request.user.followed_categories.all()
     following = request.user.profile.following.all()
-    followers = request.user.followers.all()
+    followers = User.objects.filter(profile__following=request.user)
     favorite_articles = request.user.profile.favorite_articles.all()
     incoming_requests = request.user.received_follow_requests.select_related('from_user').all()
 
@@ -75,7 +75,7 @@ def user_profile(request, username):
         'user_articles': viewed_user.articles.all(),
         'user_ratings': viewed_user.ratings.all(),
         'following': viewed_user.profile.following.all(),
-        'followers': viewed_user.followers.all(),
+        'followers': User.objects.filter(profile__following=viewed_user),
         'is_following': is_following,
         'has_pending_request': has_pending_request,
     }
@@ -115,7 +115,7 @@ def followers_list(request, username):
     ) and request.user != viewed_user:
         return redirect('users:user_profile', username=username)
 
-    followers = viewed_user.followers.all()
+    followers = User.objects.filter(profile__following=viewed_user)
     pending_ids = set(
         FollowRequest.objects.filter(from_user=request.user).values_list('to_user_id', flat=True)
     ) if request.user.is_authenticated else set()
