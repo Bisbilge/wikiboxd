@@ -127,15 +127,32 @@
         .mb-3 > textarea {
             margin-bottom: 0;
         }
-        /* Input-group ve yatay formlarda margin sıfırla */
+        /* Input-group düzeltmeleri — çift çizgi ve radius sorunları */
         .input-group .form-control,
-        .input-group input,
-        .input-group select,
+        .input-group input {
+            margin-bottom: 0 !important;
+            border-left: none !important;
+            border-radius: 0 2px 2px 0 !important;
+        }
+        .input-group-text {
+            border: 1px solid var(--border) !important;
+            border-radius: 2px 0 0 2px !important;
+            background-color: #fff !important;
+            color: var(--text-muted);
+        }
+        /* Küçük boyutlu Bootstrap seçiciler — padding ve margin sıfırla */
+        .form-select,
+        .form-select-sm,
+        .form-control-sm {
+            margin-bottom: 0 !important;
+            padding: .3rem .6rem !important;
+            font-size: .875rem !important;
+        }
+        /* Yatay formlarda margin sıfırla */
         .d-flex > input,
         .d-flex > select,
         .row input,
-        .row select,
-        .form-select {
+        .row select {
             margin-bottom: 0 !important;
         }
 
