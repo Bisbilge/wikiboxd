@@ -108,7 +108,7 @@
             font-size: 0.9rem;
         }
         .form-control,
-        input:not([type="submit"]):not([type="button"]):not(.navbar-search-input),
+        input:not([type="submit"]):not([type="button"]):not(.navbar-search-input):not([type="checkbox"]):not([type="radio"]),
         select,
         textarea {
             background-color: #fff !important;
@@ -117,9 +117,26 @@
             border-radius: 2px;
             padding: 8px 10px;
             width: 100%;
-            margin-bottom: 1rem;
             font-size: 0.9rem;
             transition: border-color 0.15s;
+        }
+        /* Tekil form alanlarında alt boşluk */
+        .mb-3 > .form-control,
+        .mb-3 > input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+        .mb-3 > select,
+        .mb-3 > textarea {
+            margin-bottom: 0;
+        }
+        /* Input-group ve yatay formlarda margin sıfırla */
+        .input-group .form-control,
+        .input-group input,
+        .input-group select,
+        .d-flex > input,
+        .d-flex > select,
+        .row input,
+        .row select,
+        .form-select {
+            margin-bottom: 0 !important;
         }
 
         /* Navbar arama kutusu */

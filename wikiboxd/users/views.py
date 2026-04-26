@@ -145,7 +145,15 @@ def user_search(request):
             pk=request.user.pk if request.user.is_authenticated else None
         ).select_related('profile')
 
-    return render(request, 'users/user_search.html', {'results': results, 'q': q})
+    pending_ids = set(
+        FollowRequest.objects.filter(from_user=request.user).values_list('to_user_id', flat=True)
+    ) if request.user.is_authenticated else set()
+
+    return render(request, 'users/user_search.html', {
+        'results': results,
+        'q': q,
+        'pending_request_ids': pending_ids,
+    })
 
 
 # Takip isteği gönder / iptal et / takipten çık

@@ -7,46 +7,56 @@
 
     <!-- Makale Başlık Kartı -->
     <div class="card-custom p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-            <div>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div class="flex-grow-1">
                 {% if article.category %}
-                    <span class="badge mb-2" style="background-color: #eaf3fb; color: #3366cc; border: 1px solid #a2c4e8;">{{ article.category.name }}</span>
+                    <a href="{% url 'articles:category_detail' article.category.slug %}"
+                       class="badge mb-2 text-decoration-none"
+                       style="background-color: #eaf3fb; color: #3366cc; border: 1px solid #a2c4e8; font-weight: 500;">
+                        {{ article.category.get_full_name }}
+                    </a>
                 {% endif %}
-                <h1 class="fw-bold mb-1" style="font-family: 'Linux Libertine', Georgia, serif; font-size: 1.8rem; color: #202122;">{{ article.title }}</h1>
+                <h1 class="fw-bold mb-1" style="font-family: 'Linux Libertine', Georgia, serif; font-size: 1.8rem; color: #202122; line-height: 1.25;">
+                    {{ article.title }}
+                </h1>
                 <small class="text-muted">
-                    Yazar: <a href="{% url 'users:user_profile' article.author.username %}" style="color: #3366cc;">{{ article.author.username|default:"Anonim" }}</a> &nbsp;·&nbsp;
-                    {{ article.created_at|date:"d M Y" }}
+                    Yazar: <a href="{% url 'users:user_profile' article.author.username %}" style="color: #3366cc;">{{ article.author.username|default:"Anonim" }}</a>
+                    &nbsp;·&nbsp; {{ article.created_at|date:"d M Y" }}
                 </small>
             </div>
-            <div class="d-flex flex-column align-items-end gap-2">
+
+            <!-- Sağ: Puan + Aksiyonlar -->
+            <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
                 <div class="text-center">
                     {% if avg_score %}
-                        <div style="font-size: 2.2rem; font-weight: 800; color: #3366cc; line-height: 1;">
+                        <div style="font-size: 2.4rem; font-weight: 800; color: #3366cc; line-height: 1;">
                             {{ avg_score|floatformat:1 }}
                         </div>
                         <small class="text-muted">/ 10 &nbsp;({{ ratings.count }} puan)</small>
                     {% else %}
-                        <div class="text-muted" style="font-size: 0.9rem;">Henüz puanlanmadı</div>
+                        <small class="text-muted d-block">Henüz puanlanmadı</small>
                     {% endif %}
                 </div>
-                {% if user.is_authenticated %}
-                <form method="post" action="{% url 'articles:toggle_favorite' article.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm {% if is_favorited %}btn-brand{% else %}btn-outline-wiki{% endif %}">
-                        <i class="bi {% if is_favorited %}bi-bookmark-heart-fill{% else %}bi-bookmark-heart{% endif %} me-1"></i>
-                        {% if is_favorited %}Favorilendi{% else %}Favorile{% endif %}
-                    </button>
-                </form>
-                {% endif %}
-                {% if article.wiki_url %}
-                <a href="{{ article.wiki_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-wiki btn-sm">
-                    <i class="bi bi-box-arrow-up-right me-1"></i> Wikipedia'da Aç
-                </a>
-                {% endif %}
+                <div class="d-flex gap-2 flex-wrap justify-content-end">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'articles:toggle_favorite' article.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm {% if is_favorited %}btn-brand{% else %}btn-outline-wiki{% endif %}">
+                            <i class="bi {% if is_favorited %}bi-bookmark-heart-fill{% else %}bi-bookmark-heart{% endif %} me-1"></i>
+                            {% if is_favorited %}Favorilendi{% else %}Favorile{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% if article.wiki_url %}
+                    <a href="{{ article.wiki_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-wiki btn-sm">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Wikipedia'da Aç
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
-        <hr style="border-color: #eaecf0; margin: 1.5rem 0;">
+        <hr style="border-color: #eaecf0; margin: 1.25rem 0;">
 
         <!-- Kısa Açıklama -->
         {% if article.description %}
@@ -63,84 +73,106 @@
             loading="lazy"
         ></iframe>
         {% else %}
-        <p class="text-muted">{{ article.content }}</p>
+        <p class="text-muted mt-2">{{ article.content }}</p>
         {% endif %}
     </div>
 
+    <!-- Puanlama + Yorumlar -->
     <div class="row g-4">
 
-        <!-- Puan Ver Formu -->
+        <!-- Sol: Puan Ver -->
         <div class="col-lg-4">
             <div class="card-custom p-4">
-                <p class="section-title mb-3"><i class="bi bi-star me-1"></i> Puanla</p>
-
+                <p class="section-title mb-3"><i class="bi bi-star me-1"></i>Puanla</p>
                 {% if user.is_authenticated %}
                     {% if user_rating %}
-                        <div class="text-center py-3">
-                            <div style="font-size: 2rem; font-weight: 800; color: #3366cc;">
-                                {{ user_rating.score }}<span class="text-muted" style="font-size: 1rem;">/10</span>
-                            </div>
-                            <p class="text-muted mb-0" style="font-size: 0.9rem;">Zaten puan verdiniz.</p>
+                    <div class="text-center py-2">
+                        <div style="font-size: 2.2rem; font-weight: 800; color: #3366cc; line-height: 1;">
+                            {{ user_rating.score }}<span class="text-muted" style="font-size: 1rem;">/10</span>
                         </div>
+                        <p class="text-muted mt-1 mb-0" style="font-size: 0.88rem;">Puanın kaydedildi.</p>
+                    </div>
                     {% else %}
-                        <form method="post" action="{% url 'ratings:rate_article' article.pk %}">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label class="form-label">Puan (1-10)</label>
-                                <input type="number" name="score" min="1" max="10" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-brand w-100">Puanı Kaydet</button>
-                        </form>
+                    <form method="post" action="{% url 'ratings:rate_article' article.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Puan (1–10)</label>
+                            <input type="number" name="score" min="1" max="10" class="form-control" placeholder="1–10 arası girin" required>
+                        </div>
+                        <button type="submit" class="btn btn-brand w-100">Puanı Kaydet</button>
+                    </form>
                     {% endif %}
                 {% else %}
-                    <div class="text-center py-3">
-                        <p class="text-muted mb-3">Puan vermek için giriş yapmalısınız.</p>
-                        <a href="{% url 'users:login' %}" class="btn btn-brand w-100">Giriş Yap</a>
-                    </div>
+                <div class="text-center py-2">
+                    <p class="text-muted mb-3" style="font-size: .9rem;">Puan vermek için giriş yapın.</p>
+                    <a href="{% url 'users:login' %}" class="btn btn-brand w-100">Giriş Yap</a>
+                </div>
                 {% endif %}
             </div>
-        </div>
 
-    </div>
-
-    <!-- Yorumlar Bölümü -->
-    <div class="mt-5">
-        <p class="section-title mb-3"><i class="bi bi-chat-square-text me-1"></i> Yorumlar ({{ comments.count }})</p>
-
-        {% if user.is_authenticated %}
-        <div class="card-custom p-4 mb-4">
-            <form method="post" action="{% url 'comments:add_comment' article.pk %}">
-                {% csrf_token %}
-                <label class="form-label">Yorum Yaz</label>
-                <textarea name="text" rows="3" class="form-control" placeholder="Yorumunuzu buraya yazın..." required></textarea>
-                <button type="submit" class="btn btn-brand mt-2">Yorum Ekle</button>
-            </form>
-        </div>
-        {% else %}
-        <div class="card-custom p-3 mb-4 text-center text-muted">
-            Yorum yazmak için <a href="{% url 'users:login' %}">giriş yapın</a>.
-        </div>
-        {% endif %}
-
-        {% for comment in comments %}
-        <div class="card-custom p-3 mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <a href="{% url 'users:user_profile' comment.user.username %}" style="color: #202122; font-weight: 600; text-decoration: none;">{{ comment.user.username }}</a>
-                <small class="text-muted">{{ comment.created_at|date:"d M Y" }}</small>
+            <!-- Son Puanlamalar -->
+            {% if ratings %}
+            <div class="card-custom p-3 mt-3">
+                <p class="section-title mb-3"><i class="bi bi-list-stars me-1"></i>Son Puanlamalar</p>
+                {% for r in ratings|slice:":5" %}
+                <div class="d-flex justify-content-between align-items-center py-1" style="{% if not forloop.last %}border-bottom: 1px solid #eaecf0;{% endif %}">
+                    <a href="{% url 'users:user_profile' r.user.username %}" style="font-size: .88rem; color: #3366cc; text-decoration: none;">
+                        {{ r.user.username }}
+                    </a>
+                    <span style="font-weight: 700; color: #3366cc; font-size: .88rem;">{{ r.score }}/10</span>
+                </div>
+                {% endfor %}
             </div>
-            <p class="mb-0 text-muted" style="font-size: 0.92rem;">{{ comment.text }}</p>
+            {% endif %}
         </div>
-        {% empty %}
-        <div class="text-center py-4 text-muted">
-            <i class="bi bi-chat-x display-4 d-block mb-3"></i>
-            Henüz yorum yapılmamış. İlk yorumu siz yapın!
+
+        <!-- Sağ: Yorumlar -->
+        <div class="col-lg-8">
+            <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
+                <p class="section-title mb-0"><i class="bi bi-chat-square-text me-1"></i>Yorumlar ({{ comments.count }})</p>
+            </div>
+
+            {% if user.is_authenticated %}
+            <div class="card-custom p-3 mb-4">
+                <form method="post" action="{% url 'comments:add_comment' article.pk %}">
+                    {% csrf_token %}
+                    <label class="form-label">Yorum Yaz</label>
+                    <div class="mb-3">
+                        <textarea name="text" rows="3" class="form-control" placeholder="Yorumunuzu buraya yazın..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-brand">Yorum Ekle</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="card-custom p-3 mb-4 text-center text-muted" style="font-size: .9rem;">
+                Yorum yazmak için <a href="{% url 'users:login' %}">giriş yapın</a>.
+            </div>
+            {% endif %}
+
+            {% for comment in comments %}
+            <div class="card-custom p-3 mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <a href="{% url 'users:user_profile' comment.user.username %}"
+                       style="color: #202122; font-weight: 600; text-decoration: none; font-size: .92rem;">
+                        {{ comment.user.username }}
+                    </a>
+                    <small class="text-muted">{{ comment.created_at|date:"d M Y" }}</small>
+                </div>
+                <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.6;">{{ comment.text }}</p>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-chat-x display-4 d-block mb-3"></i>
+                Henüz yorum yapılmamış. İlk yorumu siz yapın!
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+
     </div>
 
     <div class="mt-4 mb-2">
-        <a href="{% url 'articles:home' %}" class="text-muted" style="font-size: 0.9rem; text-decoration: none;">
-            <i class="bi bi-arrow-left me-1"></i> Tüm Makalelere Dön
+        <a href="javascript:history.back()" class="text-muted" style="font-size: 0.88rem; text-decoration: none;">
+            <i class="bi bi-arrow-left me-1"></i>Geri Dön
         </a>
     </div>
 

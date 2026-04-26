@@ -8,46 +8,47 @@
 
         <!-- Sol: Kullanıcı Kartı -->
         <div class="col-md-3">
-            <div class="card-custom p-4 text-center">
+            <div class="card-custom p-4 text-center" style="position: sticky; top: 80px;">
                 <i class="bi bi-person-circle display-3 text-muted mb-2"></i>
                 <h5 class="mb-0" style="font-family: 'Linux Libertine', Georgia, serif;">{{ viewed_user.username }}</h5>
                 {% if viewed_user.first_name %}
-                <p class="text-muted mb-1" style="font-size: 0.9rem;">{{ viewed_user.first_name }} {{ viewed_user.last_name }}</p>
+                <p class="text-muted mt-1 mb-1" style="font-size: 0.88rem;">{{ viewed_user.first_name }} {{ viewed_user.last_name }}</p>
                 {% endif %}
-                <p class="text-muted mb-2" style="font-size: 0.8rem;">Katılım: {{ viewed_user.date_joined|date:"M Y" }}</p>
+                {% if viewed_user.profile.bio %}
+                <p class="text-muted mt-1 mb-2" style="font-size: .83rem; line-height: 1.5;">{{ viewed_user.profile.bio }}</p>
+                {% endif %}
+                <p class="text-muted mb-3" style="font-size: 0.78rem;">
+                    <i class="bi bi-calendar3 me-1"></i>Katılım: {{ viewed_user.date_joined|date:"M Y" }}
+                </p>
 
-                <div class="d-flex justify-content-center gap-3 mb-3" style="font-size: .85rem;">
+                <div class="d-flex justify-content-center gap-4 mb-3" style="font-size: .85rem;">
+                    <a href="{% url 'users:following_list' viewed_user.username %}" class="text-decoration-none text-reset">
+                        <div class="fw-semibold">{{ following.count }}</div>
+                        <div class="text-muted" style="font-size:.78rem;">Takip</div>
+                    </a>
+                    <a href="{% url 'users:followers_list' viewed_user.username %}" class="text-decoration-none text-reset">
+                        <div class="fw-semibold">{{ followers.count }}</div>
+                        <div class="text-muted" style="font-size:.78rem;">Takipçi</div>
+                    </a>
                     <div>
-                        <a href="{% url 'users:following_list' viewed_user.username %}" class="text-decoration-none text-reset">
-                            <span class="fw-semibold">{{ following.count }}</span>
-                            <span class="text-muted"> takip</span>
-                        </a>
-                    </div>
-                    <div>
-                        <a href="{% url 'users:followers_list' viewed_user.username %}" class="text-decoration-none text-reset">
-                            <span class="fw-semibold">{{ followers.count }}</span>
-                            <span class="text-muted"> takipçi</span>
-                        </a>
+                        <div class="fw-semibold">{{ user_articles.count }}</div>
+                        <div class="text-muted" style="font-size:.78rem;">Makale</div>
                     </div>
                 </div>
-
-                {% if viewed_user.profile.bio %}
-                <p class="text-muted mb-3" style="font-size: .85rem; text-align: left;">{{ viewed_user.profile.bio }}</p>
-                {% endif %}
 
                 {% if user.is_authenticated %}
                 <form method="post" action="{% url 'users:toggle_follow' viewed_user.username %}">
                     {% csrf_token %}
                     {% if is_following %}
-                    <button type="submit" class="btn btn-sm w-100 btn-brand">
+                    <button type="submit" class="btn btn-brand btn-sm w-100">
                         <i class="bi bi-person-check-fill me-1"></i>Takip Ediliyor
                     </button>
                     {% elif has_pending_request %}
-                    <button type="submit" class="btn btn-sm w-100 btn-outline-wiki">
+                    <button type="submit" class="btn btn-outline-wiki btn-sm w-100">
                         <i class="bi bi-hourglass-split me-1"></i>İstek Gönderildi
                     </button>
                     {% else %}
-                    <button type="submit" class="btn btn-sm w-100 btn-outline-wiki">
+                    <button type="submit" class="btn btn-outline-wiki btn-sm w-100">
                         <i class="bi bi-person-plus me-1"></i>Takip Et
                     </button>
                     {% endif %}
@@ -60,48 +61,50 @@
         <div class="col-md-9">
 
             <!-- Makaleleri -->
-            <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
-                <h5 class="section-title mb-0">Makaleleri</h5>
+            <div class="d-flex align-items-center justify-content-between pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
+                <p class="section-title mb-0">Makaleleri</p>
             </div>
             {% if user_articles %}
-                {% for article in user_articles %}
-                <div class="card-custom p-3 mb-2">
+            {% for article in user_articles %}
+            <div class="card-custom p-3 mb-2">
+                <div class="d-flex justify-content-between align-items-start gap-2">
                     <a href="{% url 'articles:detail' article.pk %}"
-                       style="font-weight: 600; color: #3366cc; font-size: 0.95rem;">
+                       style="font-weight: 600; color: #3366cc; font-size: 0.92rem; text-decoration: none; flex-grow: 1;">
                         {{ article.title }}
                     </a>
-                    <small class="text-muted d-block mt-1" style="font-size: .82rem;">
-                        <i class="bi bi-calendar3 me-1"></i>{{ article.created_at|date:"d M Y" }}
+                    <small class="text-muted flex-shrink-0" style="font-size: .8rem;">
+                        {{ article.created_at|date:"d M Y" }}
                     </small>
                 </div>
-                {% endfor %}
+            </div>
+            {% endfor %}
             {% else %}
-                <p class="text-muted mb-4">Henüz makale eklenmemiş.</p>
+            <p class="text-muted mb-4" style="font-size:.9rem;">Henüz makale eklenmemiş.</p>
             {% endif %}
 
             <!-- Puanlamaları -->
             <div class="pb-2 mb-3 mt-4" style="border-bottom: 1px solid #a2a9b1;">
-                <h5 class="section-title mb-0">Son Puanlamaları</h5>
+                <p class="section-title mb-0">Son Puanlamaları</p>
             </div>
             {% if user_ratings %}
-                {% for rating in user_ratings %}
-                <div class="card-custom p-3 mb-2">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <a href="{% url 'articles:detail' rating.article.pk %}"
-                           style="font-weight: 600; color: #3366cc; font-size: 0.95rem;">
-                            {{ rating.article.title }}
-                        </a>
-                        <span style="color: #3366cc; font-weight: 700; white-space: nowrap; font-size: 0.9rem;">
-                            <i class="bi bi-star-fill"></i> {{ rating.score }}/10
-                        </span>
-                    </div>
-                    {% if rating.review_text %}
-                    <p class="mb-0 mt-1 text-muted" style="font-size: 0.85rem;">"{{ rating.review_text|truncatechars:100 }}"</p>
-                    {% endif %}
+            {% for rating in user_ratings %}
+            <div class="card-custom p-3 mb-2">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <a href="{% url 'articles:detail' rating.article.pk %}"
+                       style="font-weight: 600; color: #3366cc; font-size: 0.92rem; text-decoration: none; flex-grow: 1;">
+                        {{ rating.article.title }}
+                    </a>
+                    <span class="flex-shrink-0" style="color: #3366cc; font-weight: 700; font-size: 0.88rem; white-space: nowrap;">
+                        <i class="bi bi-star-fill"></i> {{ rating.score }}/10
+                    </span>
                 </div>
-                {% endfor %}
+                {% if rating.review_text %}
+                <p class="mb-0 mt-1 text-muted" style="font-size: 0.85rem;">"{{ rating.review_text|truncatechars:120 }}"</p>
+                {% endif %}
+            </div>
+            {% endfor %}
             {% else %}
-                <p class="text-muted">Henüz puanlama yapılmamış.</p>
+            <p class="text-muted" style="font-size:.9rem;">Henüz puanlama yapılmamış.</p>
             {% endif %}
 
         </div>

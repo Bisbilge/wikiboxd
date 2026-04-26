@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ user.username }} - Profil{% endblock %}
+{% block title %}{{ user.username }} — Profilim{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -8,31 +8,43 @@
 
         <!-- Sol: Kullanıcı Kartı -->
         <div class="col-md-3">
-            <div class="card-custom p-4 text-center">
+            <div class="card-custom p-4 text-center" style="position: sticky; top: 80px;">
                 <i class="bi bi-person-circle display-3 text-muted mb-2"></i>
                 <h5 class="mb-0" style="font-family: 'Linux Libertine', Georgia, serif;">{{ user.username }}</h5>
                 {% if user.first_name %}
-                    <p class="text-muted mb-1" style="font-size: 0.9rem;">{{ user.first_name }} {{ user.last_name }}</p>
+                    <p class="text-muted mb-1 mt-1" style="font-size: 0.88rem;">{{ user.first_name }} {{ user.last_name }}</p>
                 {% endif %}
-                <p class="text-muted mb-2" style="font-size: 0.8rem;">Katılım: {{ user.date_joined|date:"M Y" }}</p>
-                <div class="d-flex justify-content-center gap-3 mb-3" style="font-size: .85rem;">
+                {% if user.profile.bio %}
+                    <p class="text-muted mt-1 mb-2" style="font-size: .83rem; line-height: 1.5;">{{ user.profile.bio }}</p>
+                {% endif %}
+                <p class="text-muted mb-3" style="font-size: 0.78rem;">
+                    <i class="bi bi-calendar3 me-1"></i>Katılım: {{ user.date_joined|date:"M Y" }}
+                    {% if user.profile.is_private %}
+                        &nbsp;·&nbsp;<i class="bi bi-lock-fill me-1"></i>Gizli
+                    {% endif %}
+                </p>
+                <div class="d-flex justify-content-center gap-4 mb-3" style="font-size: .85rem;">
+                    <a href="{% url 'users:following_list' user.username %}" class="text-decoration-none text-reset">
+                        <div class="fw-semibold">{{ following.count }}</div>
+                        <div class="text-muted" style="font-size:.78rem;">Takip</div>
+                    </a>
+                    <a href="{% url 'users:followers_list' user.username %}" class="text-decoration-none text-reset">
+                        <div class="fw-semibold">{{ followers.count }}</div>
+                        <div class="text-muted" style="font-size:.78rem;">Takipçi</div>
+                    </a>
                     <div>
-                        <a href="{% url 'users:following_list' user.username %}" class="text-decoration-none text-reset">
-                            <span class="fw-semibold">{{ following.count }}</span>
-                            <span class="text-muted"> takip</span>
-                        </a>
-                    </div>
-                    <div>
-                        <a href="{% url 'users:followers_list' user.username %}" class="text-decoration-none text-reset">
-                            <span class="fw-semibold">{{ followers.count }}</span>
-                            <span class="text-muted"> takipçi</span>
-                        </a>
+                        <div class="fw-semibold">{{ user_articles.count }}</div>
+                        <div class="text-muted" style="font-size:.78rem;">Makale</div>
                     </div>
                 </div>
-                <a href="{% url 'users:edit_profile' %}" class="btn btn-outline-wiki btn-sm w-100 mb-2">Profili Düzenle</a>
+                <a href="{% url 'users:edit_profile' %}" class="btn btn-outline-wiki btn-sm w-100 mb-2">
+                    <i class="bi bi-pencil me-1"></i>Profili Düzenle
+                </a>
                 <form action="{% url 'users:logout' %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm w-100" style="border: 1px solid #fca5a5; color: #b91c1c; background: #fff;">Çıkış Yap</button>
+                    <button type="submit" class="btn btn-sm w-100" style="border: 1px solid #fca5a5; color: #b91c1c; background: #fff;">
+                        <i class="bi bi-box-arrow-right me-1"></i>Çıkış Yap
+                    </button>
                 </form>
             </div>
         </div>
@@ -43,15 +55,16 @@
             <!-- Gelen Takip İstekleri -->
             {% if incoming_requests %}
             <div class="card-custom p-3 mb-4" style="border-left: 4px solid #3366cc;">
-                <div class="pb-2 mb-3" style="border-bottom: 1px solid #eaecf0;">
-                    <h5 class="section-title mb-0">
+                <div class="d-flex align-items-center justify-content-between pb-2 mb-3" style="border-bottom: 1px solid #eaecf0;">
+                    <p class="section-title mb-0">
                         <i class="bi bi-person-plus me-1"></i>Takip İstekleri
-                        <span class="badge rounded-pill ms-1" style="background:#3366cc; font-size:.7rem;">{{ incoming_requests.count }}</span>
-                    </h5>
+                    </p>
+                    <span class="badge rounded-pill" style="background:#3366cc;">{{ incoming_requests.count }}</span>
                 </div>
                 {% for req in incoming_requests %}
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <a href="{% url 'users:user_profile' req.from_user.username %}" style="font-weight:600; color:#3366cc; text-decoration:none;">
+                <div class="d-flex align-items-center justify-content-between py-2 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: #eaecf0;">
+                    <a href="{% url 'users:user_profile' req.from_user.username %}"
+                       style="font-weight: 600; color: #3366cc; text-decoration: none; font-size: .9rem;">
                         <i class="bi bi-person-circle me-1 text-muted"></i>{{ req.from_user.username }}
                     </a>
                     <div class="d-flex gap-2">
@@ -70,8 +83,9 @@
             {% endif %}
 
             <!-- Takip Edilen Kategoriler -->
-            <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
-                <h5 class="section-title mb-0">Takip Ettiğim Kategoriler</h5>
+            <div class="d-flex align-items-center justify-content-between pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
+                <p class="section-title mb-0">Takip Ettiğim Kategoriler</p>
+                <a href="{% url 'articles:category_list' %}" class="text-muted" style="font-size:.8rem; text-decoration:none;">Keşfet →</a>
             </div>
             {% if followed_categories %}
             <div class="d-flex flex-wrap gap-2 mb-4">
@@ -84,53 +98,55 @@
                 {% endfor %}
             </div>
             {% else %}
-                <p class="text-muted mb-4">Henüz hiçbir kategori takip etmiyorsun.</p>
+            <p class="text-muted mb-4" style="font-size:.9rem;">Henüz hiçbir kategori takip etmiyorsun.</p>
             {% endif %}
 
             <!-- Favori Makaleler -->
-            <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
-                <h5 class="section-title mb-0">Favori Makalelerim</h5>
+            <div class="pb-2 mb-3 mt-2" style="border-bottom: 1px solid #a2a9b1;">
+                <p class="section-title mb-0">Favori Makalelerim</p>
             </div>
             {% if favorite_articles %}
             <div class="mb-4">
                 {% for article in favorite_articles %}
                 <div class="card-custom p-3 mb-2 d-flex justify-content-between align-items-center">
-                    <a href="{% url 'articles:detail' article.pk %}" style="font-weight: 600; color: #3366cc; font-size: 0.95rem;">
+                    <a href="{% url 'articles:detail' article.pk %}"
+                       style="font-weight: 600; color: #3366cc; font-size: 0.92rem; text-decoration: none;">
                         {{ article.title }}
                     </a>
-                    <i class="bi bi-bookmark-heart-fill" style="color: #e05c5c;"></i>
+                    <i class="bi bi-bookmark-heart-fill flex-shrink-0 ms-2" style="color: #e05c5c;"></i>
                 </div>
                 {% endfor %}
             </div>
             {% else %}
-                <p class="text-muted mb-4">Henüz favori makale eklemedin.</p>
+            <p class="text-muted mb-4" style="font-size:.9rem;">Henüz favori makale eklemedin.</p>
             {% endif %}
 
-            <!-- Puanlamalar -->
-            <div class="pb-2 mb-3" style="border-bottom: 1px solid #a2a9b1;">
-                <h5 class="section-title mb-0">Son Puanlamalarım</h5>
+            <!-- Son Puanlamalar -->
+            <div class="pb-2 mb-3 mt-2" style="border-bottom: 1px solid #a2a9b1;">
+                <p class="section-title mb-0">Son Puanlamalarım</p>
             </div>
             {% if user_ratings %}
-                {% for rating in user_ratings %}
-                <div class="card-custom p-3 mb-2">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <a href="{% url 'articles:detail' rating.article.pk %}" style="font-weight: 600; color: #3366cc; font-size: 0.95rem;">
-                            {{ rating.article.title }}
-                        </a>
-                        <span style="color: #3366cc; font-weight: 700; white-space: nowrap; font-size: 0.9rem;">
-                            <i class="bi bi-star-fill"></i> {{ rating.score }}/10
-                        </span>
-                    </div>
-                    {% if rating.review_text %}
-                        <p class="mb-0 mt-1 text-muted" style="font-size: 0.85rem;">"{{ rating.review_text|truncatechars:100 }}"</p>
-                    {% endif %}
+            {% for rating in user_ratings %}
+            <div class="card-custom p-3 mb-2">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <a href="{% url 'articles:detail' rating.article.pk %}"
+                       style="font-weight: 600; color: #3366cc; font-size: 0.92rem; text-decoration: none; flex-grow: 1;">
+                        {{ rating.article.title }}
+                    </a>
+                    <span class="flex-shrink-0" style="color: #3366cc; font-weight: 700; font-size: 0.88rem; white-space: nowrap;">
+                        <i class="bi bi-star-fill"></i> {{ rating.score }}/10
+                    </span>
                 </div>
-                {% endfor %}
+                {% if rating.review_text %}
+                <p class="mb-0 mt-1 text-muted" style="font-size: 0.85rem; line-height: 1.5;">"{{ rating.review_text|truncatechars:120 }}"</p>
+                {% endif %}
+            </div>
+            {% endfor %}
             {% else %}
-                <p class="text-muted">Henüz hiçbir makaleyi puanlamadın.</p>
+            <p class="text-muted" style="font-size:.9rem;">Henüz hiçbir makaleyi puanlamadın.</p>
             {% endif %}
-        </div>
 
+        </div>
     </div>
 </div>
 {% endblock %}
