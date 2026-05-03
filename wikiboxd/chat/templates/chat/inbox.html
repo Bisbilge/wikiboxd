@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Mesajlar — Wikiboxd{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px;">
+    <h4 class="mb-4" style="font-family: 'Linux Libertine', Georgia, serif;">
+        <i class="bi bi-chat-dots me-2" style="color: var(--brand);"></i>Mesajlar
+    </h4>
+
+    {% if conv_data %}
+        <div class="card-custom">
+            {% for item in conv_data %}
+            <a href="{% url 'chat:conversation' item.conv.pk %}"
+               class="d-flex align-items-center gap-3 p-3 text-decoration-none text-reset"
+               style="border-bottom: 1px solid var(--border-light); transition: background .15s;"
+               onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background=''">
+                <i class="bi bi-person-circle fs-2 text-muted"></i>
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong style="font-size: .93rem;">{{ item.other.username }}</strong>
+                        {% if item.last %}
+                        <small class="text-muted" style="font-size: .78rem;">
+                            {{ item.last.created_at|date:"d M, H:i" }}
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% if item.last %}
+                    <p class="mb-0 text-muted"
+                       style="font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 420px;">
+                        {% if item.last.sender == request.user %}
+                            <span>Sen: </span>
+                        {% endif %}
+                        {{ item.last.body|truncatechars:65 }}
+                    </p>
+                    {% else %}
+                    <p class="mb-0 text-muted" style="font-size: .85rem;">Henüz mesaj yok.</p>
+                    {% endif %}
+                </div>
+                {% if item.unread %}
+                <span class="badge rounded-pill" style="background: var(--brand); font-size: .72rem;">
+                    {{ item.unread }}
+                </span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-chat-dots fs-1 mb-3 d-block" style="color: var(--border);"></i>
+            <p class="mb-1">Henüz mesajın yok.</p>
+            <p style="font-size: .88rem;">
+                Bir kullanıcının profiline giderek konuşma başlatabilirsin.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
