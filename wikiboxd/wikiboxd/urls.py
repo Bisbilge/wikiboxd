@@ -7,4 +7,5 @@ urlpatterns = [
     path('ratings/', include('ratings.urls')),
     path('', include('articles.urls')),
     path('comments/', include('comments.urls')),
+    path('mesajlar/', include('chat.urls')),
 ]
