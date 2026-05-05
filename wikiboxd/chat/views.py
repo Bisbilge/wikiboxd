@@ -43,3 +43,22 @@ def conversation_detail(request, conversation_id):
         'form': form,
         'other': other,
     })
+
+
+@login_required
+def start_conversation(request, username):
+    target = get_object_or_404(User, username=username)
+    if target == request.user:
+        return redirect('chat:inbox')
+
+    conversation = (
+        Conversation.objects.filter(participants=request.user)
+        .filter(participants=target)
+        .first()
+    )
+
+    if not conversation:
+        conversation = Conversation.objects.create()
+        conversation.participants.add(request.user, target)
+
+    return redirect('chat:conversation', conversation_id=conversation.pk)
