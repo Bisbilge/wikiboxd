@@ -11,19 +11,18 @@ def notify_category_followers(sender, instance, created, **kwargs):
     from users.models import Notification
     from django.contrib.auth.models import User
 
-    # Makale kategorisi + tüm üst kategorileri topla
+
     cats = []
     cat = instance.category
     while cat:
         cats.append(cat)
         cat = cat.parent
 
-    # Tüm kategorilerin takipçilerini birleştir (tekrarsız)
+
     follower_ids = set()
     for c in cats:
         follower_ids.update(c.followers.values_list('id', flat=True))
 
-    # Yazarı çıkar
     if instance.author_id:
         follower_ids.discard(instance.author_id)
 
